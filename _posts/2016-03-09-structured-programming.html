@@ -1,0 +1,99 @@
+---
+layout: post
+title: Structured Programming
+date: 2016-03-09 00:00:00
+---
+
+<p>Back in 1968 Edsger W. Dijkstra wrote an open letter named "Go To Statement Considered Harmful". As already suggested from
+the title, the very idea was to raise consciousness that the <code>goto</code> statement is more harmful then helpful. From
+today view we would expect that this idea catches fire really fast, but it didn't. It took quite a long time. Even during
+all the 1970s and 1980s that question was debated a lot.</p>
+<p>Looking back at it there are some interesting questions that is worth to look at. The first one was, if <code>goto</code> was
+harmful, what was the alternative to <code>goto</code>? And why exactly is <code>goto</code> harmful, and why exactly is the alternative better?</p>
+<p>I think that looking at this questions and their answers is still a very important step forward in understanding programming and
+raise the awareness on how we achieve a more clean way of coding.</p>
+<h2>Why "goto" was considered harmful</h2>
+<p>At first we have to understand the time in which these statement was published. It was a time in that nearly every programmer
+actually used a language with such a control statement. Not only that, it usually often was the only way to provide any
+kind of control structures. There were no "subroutines", no <code>if</code>, <code>while</code>, or <code>for</code> loops. No blocks of code ans so one. Sure
+there existed languages that provides this kind of style of programming. The ALGOL 58 and ALGOL 60 (1958 and 1960) already
+provided those kind of structures, but those languages were not used by the large.</p>
+<p>Most of the programmers still used languages where a <code>goto</code> statement dominated. And where the flow of a program was dominated
+by direct <code>goto</code> statements. Dijkstra that was a huge proponent of the ALGOL language coined the term <em>Structured Programming</em>
+as an alternative to the <code>goto</code> keyword, the idea was that we should have explicit control flow. Mainly a language should be separated
+into Control Structures, Subroutines and Blocks. Control Structures should be further divided into <strong>sequence</strong>, <strong>selection</strong>,
+<strong>iteration</strong> and <strong>recursion</strong> statements.</p>
+<p>But why should we do something like that? The reason was that we anyway had this concepts, but implicitly. All of these ideas
+was <em>emulated</em> with the <code>goto</code> statement. You wanted a <code>for</code> loop? No problem just jump with <code>goto</code> to some earlier point.</p>
+<p>You wanted a subroutine? You pushed some values onto the stack, jumped to a certain point (your subroutine entry) and that
+subroutine poped the right amount of values from a stack. That is still how functions are implemented in today's language.
+That is the very reason of why you can get a <code>StackOverflowException</code> if your language don't support tail-recursion.</p>
+<p>But by giving all of them direct labels we give all of our programs more structure. And this structure helps us in understanding
+our programs. Or in other words the idea was that we should eliminate powerful construct like <code>goto</code> and yet use a lot more
+weaker but specific constructs.</p>
+<h2>Structured Programming</h2>
+<p>That overall leads to another important realization. Nearly all programming languages that we use today are basically some kind
+of Structured Programming. Whether we are talking about object-oriented language, functional languages or other paradigms.</p>
+<p>All of those languages usually provide some kind of control structures, in the form of looping <code>while</code>, <code>for</code> or <code>foreach</code>. Subroutines
+in the form of procedures, functions, (static) methods or however your language names them. Selection in the form of
+<code>if</code>, <code>switch</code> or pattern matching.</p>
+<p>It is important to realize this, because you don't really need any of those if you have a goto statement. The goto statement
+could implement all of those structures just through the use of goto. That is also the reason why i said at the beginning that
+Structured Programming is still a very important idea up to the current days.</p>
+<p>But looking more deeply into it, you will probably ask. Well is that really so? Especially if you use a functional language
+you will encounter that looping constructs are discouraged. Even in object-oriented language it is more and more discouraged.
+Instead of typical <code>while</code> or <code>foreach</code> loops in C# for example you will use LINQ, Java 8 introduced Stream as a more declarative
+alternative.</p>
+<p>And yet Structured Programming is even more an important topic. The thing is. All those functional interfaces itself or LINQ or Stream
+are basically Structured Programming brought to an extreme. Because the important point of Structured programming was not
+the introduction of <code>if</code>, <code>while</code>, <code>for</code>, functions or blocks. The important idea was the general concept of eliminating
+something powerful and provide more declarative and specific control structures instead.</p>
+<h2>Powerful vs. Specific</h2>
+<p>So let's reconsider, why was <code>goto</code> harmful? <code>goto</code> was a very powerful concept. It was so powerful that we basically don't need
+any concepts of looping constructs, functions and so on. The problem that it raised was that we ended up with programs that was
+hard to maintain. Without <strong>words</strong> that describe specific problems we have problems to face growing programs and we as humans
+have problems understanding what happens.</p>
+<p>With the introduction of <code>if</code>, <code>while</code>, <code>for</code>, functions and so on we introduced specific concepts that are all possible to express
+with goto. But giving them proper names we have it more easy to follow and understand the intention of our code. It is more
+easier because every control structure was build for one specific task.</p>
+<p>But when we look at the looping constructs we basically see the same things happen. Why do we consider <code>while</code>, <code>foreach</code> and so
+on more and more harmful these days, and replace them with functional interfaces instead? Because those concepts are still to
+powerful. For example what does a <code>foreach</code> really express? Actually not much. It just describes a <em>go through all data</em>. That is
+a general purpose way. But what can you do with it? Well a lot of powerful things!</p>
+<p>For example you can can loop with <code>foreach</code> through an array to find the smallest element or the biggest element. You can apply a function
+to every element and change every element, or insert the applied element into a new array. You can filter an array by some condition.
+You can loop through two arrays, combine them in various ways, do some calculations with every element and so on. Or in other words.
+We can do a lot with such a simple constructs. <code>foreach</code> is actually the same kind of a powerful concept like <code>goto</code>.
+And that is why we view them as <em>harmful</em>.</p>
+<p>Looking at functional interface, they really brought the concept of Structured Programming even further. Instead of just <em>looping</em> we now
+have even further separated the idea of looping. We have <code>List.min</code>, <code>List.max</code>, <code>List.map</code>, <code>List.filter</code>, <code>List.map2</code>, <code>List.zip</code>, ...
+and so one just to name a view. All of those constructs are still basically just <em>looping</em> constructs. But they are specialized looping
+constructs that just do one specific thing.</p>
+<h2>So having powerful things is bad?</h2>
+<p>If we follow this thinking then it can lead to the idea that a programming language itself should not have any powerful concepts at all.
+The less powerful a language is, the better. But actually it cannot be further from the truth. In fact it is quite the opposite, a language
+absolute must provide as much powerful things as possible.</p>
+<p>The reason for that is that we need those powerful concepts to build our less powerful, more specific things. And in building more of those
+constructs we achieve a better more clean code. A result of this is also that code will be shorter, easier to understand with less bugs.</p>
+<p>So we should aim for powerful constructs, and a language should provide those powerful constructs. But we should use them to build all our
+more specific less powerful constructs. Or in other words, in programming we always should prefer the least powerful concept to implement
+something.</p>
+<p>Sure you can implement filtering a <code>List</code> with a <code>foreach</code> loop. Go through every element, push it into a new <code>List</code> based on some condition.
+But why not abstract such a common task? <code>List.filter</code> does exactly that. It is less powerful, because it just can filter, nothing more,<br />
+but we only need to provide the logic for filtering. We have less code after we have a construct like <code>List.filter</code>. The intention is more clearer.
+Reading a <code>List.filter</code> is easier as to basically try to understand filtering through a series of commands expressed within a <code>foreach</code>
+loop.</p>
+<h2>Using the least powerful thing</h2>
+<p>When we follow these rule and thinking what Structured Programming is about, I think it leads to more readable code with all of
+the benefit this usually have. Like higher maintainability, less bugs, in general less code because of reusable constructs. The
+only thing we have todo is to identify our powerful constructs and try to come up with some alternative. In C# the usage of
+<code>while</code>, <code>for</code> or <code>foreach</code> is such a thing. In F# besides using looping constructs itself also using direct recursion or using
+<code>fold</code> counts as powerful. Recursion is basically just looping, and fold is the abstraction of tail-recursive looping with
+an accumulator. Watch out for them and either try to replace them with more specific constructs. Or build your own control
+structs!</p>
+<h2>Further Reading</h2>
+<ul>
+<li><a href="https://blog.8thlight.com/uncle-bob/2015/09/23/a-little-structure.html">Uncle Bob - A Little Structure</a></li>
+</ul>
+
+

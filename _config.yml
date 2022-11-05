@@ -1,0 +1,25 @@
+# Dependencies
+markdown:         kramdown
+highlighter:      rouge
+
+# Permalinks
+permalink:        /blog/:year/:month/:day/:title
+
+# Setup
+title:            'David Raab'
+tagline:          'Blogging about programming'
+description:      ''
+url:              https://sidburn.github.io
+baseurl:          https://sidburn.github.io
+
+author:
+  name:           'David Raab'
+  url:            https://sidburn.github.io
+
+paginate:         10
+
+github:
+  repo:           https://github.com/sidburn/sidburn.github.io
+
+gems:
+  - jekyll-sitemap

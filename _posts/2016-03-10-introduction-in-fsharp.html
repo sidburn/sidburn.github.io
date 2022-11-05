@@ -1,0 +1,1050 @@
+---
+layout: post
+title: Introduction to F#
+date: 2016-03-10 00:00:00
+---
+
+<p>When I remember the first time I looked at functional(-first) languages like F#, ML, Haskell and others.
+The typical reaction that I had, and I always see from other people is: This is unreadable, it
+must be hard to read, it feels complicated and hard.</p>
+<p>After spending some time in F# I cannot agree to that at all anymore. Often the syntax
+itself is easier (for example compared to C#), shorter and in my opinion more readable.
+The problem is more over that most functional languages shares a syntax that is completely
+different compared to languages like C, C++, C#, Java, JavaScript and other more mainstream
+languages. The problem is more that it is just unfamiliar.</p>
+<p>In this post I want you to give a quick overview over the most common and important concepts.
+With this overview it should be easy to understand the most basic part to read
+and understand functional code.</p>
+<p>For better understanding I will provide some C# to F# code examples.</p>
+<h2>Variables</h2>
+<h3>Definition C#</h3>
+<p>Variables are an important concept, in C# you can define variables in two ways. First with an
+explicit type. You can optionally initialize it with a value.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">int</span>    num  <span class="o">=</span> <span class="n">33</span>;
+<span class="k">string</span> name <span class="o">=</span> <span class="s">"Hello"</span>;
+Person person;
+</code></pre></td></tr></table>
+<p>The second way is to use the <code>var</code> keyword. It uses <em>type-inference</em> to automatically determine the
+type of a variable. You are also forced to specify a value in this way.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">var</span> num    <span class="o">=</span> <span class="n">33</span>;
+<span class="k">var</span> name   <span class="o">=</span> <span class="s">"Hello"</span>;
+<span class="k">var</span> person <span class="o">=</span> <span class="k">new</span> Person(<span class="s">"foo"</span>);
+</code></pre></td></tr></table>
+<h3>Definition in F#</h3>
+<p>In F# we usually only use the second form of definition. But instead of <code>var</code> we write <code>let</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 13)" onmouseover="showTip(event, 'fs11', 13)" class="i">num</span>    <span class="o">=</span> <span class="n">33</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 14)" onmouseover="showTip(event, 'fs12', 14)" class="i">name</span>   <span class="o">=</span> <span class="s">&quot;Hello&quot;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 15)" onmouseover="showTip(event, 'fs13', 15)" class="i">person</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 16)" onmouseover="showTip(event, 'fs8', 16)" class="t">Person</span>(<span class="s">&quot;foo&quot;</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>We already can see some important differences.</p>
+<ol>
+<li>Semicolons are not needed to end/separate commands.</li>
+<li>We don't have to specify <code>new</code> to create an object.</li>
+</ol>
+<p>We still can add <em>type-annotations</em> if we want.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 17)" onmouseover="showTip(event, 'fs11', 17)" class="i">num</span>    <span class="o">:</span> <span onmouseout="hideTip(event, 'fs14', 18)" onmouseover="showTip(event, 'fs14', 18)" class="t">int</span>    <span class="o">=</span> <span class="n">33</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 19)" onmouseover="showTip(event, 'fs12', 19)" class="i">name</span>   <span class="o">:</span> <span onmouseout="hideTip(event, 'fs15', 20)" onmouseover="showTip(event, 'fs15', 20)" class="t">string</span> <span class="o">=</span> <span class="s">&quot;Hello&quot;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 21)" onmouseover="showTip(event, 'fs13', 21)" class="i">person</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs8', 22)" onmouseover="showTip(event, 'fs8', 22)" class="t">Person</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 23)" onmouseover="showTip(event, 'fs8', 23)" class="t">Person</span>(<span class="s">&quot;foo&quot;</span>)
+</code></pre></td>
+</tr>
+</table>
+<h2>(Im)mutability</h2>
+<h3>(Im)mutability in C#</h3>
+<p>One important difference is that every variable in C# is <em>mutable</em> by default. This
+means you can change a variable at any time you want</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">num    <span class="o">=</span> <span class="n">66</span>;
+name  <span class="o">+</span><span class="o">=</span> <span class="s">" World!"</span>;
+person <span class="o">=</span> <span class="k">new</span> Person(<span class="s">"bar"</span>);
+</code></pre></td></tr></table>
+<p>In C# you otherwise only can create immutable class fields with the <code>readonly</code> keyword.
+You cannot create immutable <em>local-variables</em>.</p>
+<h3>(Im)mutability in F#</h3>
+<p>In F# on the other hand, everything is immutable by default. You cannot change a variable by default.
+If you want to create a mutable variable you have to mark a variable as <code>mutable</code></p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs16', 24)" onmouseover="showTip(event, 'fs16', 24)" class="v">num</span>    <span class="o">=</span> <span class="n">33</span>
+<span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs17', 25)" onmouseover="showTip(event, 'fs17', 25)" class="v">name</span>   <span class="o">=</span> <span class="s">&quot;Hello&quot;</span>
+<span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs18', 26)" onmouseover="showTip(event, 'fs18', 26)" class="v">person</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 27)" onmouseover="showTip(event, 'fs8', 27)" class="t">Person</span>(<span class="s">&quot;foo&quot;</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>You change the content of a variable with <code>&lt;-</code> instead of <code>=</code>. Equal is only used to specify or comparison.
+There is no operator like <code>+=</code> in F#. F# doesn't try to make mutability convenient.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs16', 28)" onmouseover="showTip(event, 'fs16', 28)" class="v">num</span>    <span class="o">&lt;-</span> <span class="n">66</span>
+<span onmouseout="hideTip(event, 'fs17', 29)" onmouseover="showTip(event, 'fs17', 29)" class="v">name</span>   <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs17', 30)" onmouseover="showTip(event, 'fs17', 30)" class="v">name</span> <span class="o">+</span> <span class="s">&quot; World!&quot;</span>
+<span onmouseout="hideTip(event, 'fs18', 31)" onmouseover="showTip(event, 'fs18', 31)" class="v">person</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs8', 32)" onmouseover="showTip(event, 'fs8', 32)" class="t">Person</span>(<span class="s">&quot;bar&quot;</span>)
+</code></pre></td>
+</tr>
+</table>
+<h2>Functions / Static Methods</h2>
+<h3>Definition in C#</h3>
+<p>In C# you define <em>static methods</em> as part of a <em>class</em>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> MyOperations {
+    <span class="k">public</span> <span class="k">static</span> Add(<span class="k">int</span> x, <span class="k">int</span> y) {
+        <span class="k">return</span> x <span class="o">+</span> y;
+    }
+}
+</code></pre></td></tr></table>
+<h3>Definition in F#</h3>
+<p>In F# you put functions inside modules.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">module</span> <span class="t">MyOperations</span> <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 33)" onmouseover="showTip(event, 'fs19', 33)" class="f">add</span> <span onmouseout="hideTip(event, 'fs20', 34)" onmouseover="showTip(event, 'fs20', 34)" class="i">x</span> <span onmouseout="hideTip(event, 'fs21', 35)" onmouseover="showTip(event, 'fs21', 35)" class="i">y</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs20', 36)" onmouseover="showTip(event, 'fs20', 36)" class="i">x</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs21', 37)" onmouseover="showTip(event, 'fs21', 37)" class="i">y</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We can see once again some important differences.</p>
+<ol>
+<li>You also use <code>let</code> for the definition of a function</li>
+<li>Arguments <code>x</code> and <code>y</code> will just be separated by spaces instead of <code>(x, y)</code></li>
+<li><em>Type-inference</em> also works for functions.</li>
+<li>There doesn't exists a <code>return</code> keyword. The last <em>expression</em> is automatically returned as a value.</li>
+</ol>
+<p>You also can add explicit <em>type-annotations</em>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">module</span> <span onmouseout="hideTip(event, 'fs22', 38)" onmouseover="showTip(event, 'fs22', 38)" class="i">MyOperations</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="i">add</span> (<span class="i">x</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs14', 39)" onmouseover="showTip(event, 'fs14', 39)" class="i">int</span>) (<span class="i">y</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs14', 40)" onmouseover="showTip(event, 'fs14', 40)" class="i">int</span>) <span class="o">:</span> <span onmouseout="hideTip(event, 'fs14', 41)" onmouseover="showTip(event, 'fs14', 41)" class="i">int</span> <span class="o">=</span> <span class="i">x</span> <span class="o">+</span> <span class="i">y</span>
+</code></pre></td>
+</tr>
+</table>
+<h3>Calling functions in C#</h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">var</span> result <span class="o">=</span> MyOperations.Add(<span class="n">5</span>, <span class="n">10</span>);
+</code></pre></td></tr></table>
+<h3>Calling functions in F#</h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 42)" onmouseover="showTip(event, 'fs23', 42)" class="i">result</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs22', 43)" onmouseover="showTip(event, 'fs22', 43)" class="t">MyOperations</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 44)" onmouseover="showTip(event, 'fs19', 44)" class="f">add</span> <span class="n">5</span> <span class="n">10</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The only difference is that you don't use braces and commas to separate the arguments. You
+just provide the arguments as-is.</p>
+<h2>Generics</h2>
+<p>One important concept that you will see more often in F# (compared to C#) is the usage of generics.
+Because <em>type-inference</em> also works with functions. F# often automatically generalize a function
+with generic arguments, instead of specific-types. And overall generics are more important in
+functional languages.</p>
+<h3>Generics in C#</h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">static</span> T SomeFunction&lt;T&gt;(T input) {
+    <span class="c">// Some code</span>
+}
+</code></pre></td></tr></table>
+<h3>Generics in F#</h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 45)" onmouseover="showTip(event, 'fs24', 45)" class="f">someFunction</span> (<span onmouseout="hideTip(event, 'fs25', 46)" onmouseover="showTip(event, 'fs25', 46)" class="i">input</span><span class="o">:</span><span class="o">&#39;</span><span class="i">a</span>) <span class="o">=</span> <span class="c">// Some code</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Generics in F# are just annotated like normal types. The only difference is that all of them start
+with an apostrophe. Instead of <code>T</code>, <code>TIn</code>, <code>TOut</code> and so on, as often used in C#, in F# they will
+be just letters <code>'a</code>, <code>'b</code>, <code>'c</code> ...</p>
+<p>As stated previously. You also don't need to annotate generics. If you have written a generic function,
+F# will automatically infer a generic type for you. So overall you also could just write.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs26', 47)" onmouseover="showTip(event, 'fs26', 47)" class="f">someFunction</span> <span onmouseout="hideTip(event, 'fs27', 48)" onmouseover="showTip(event, 'fs27', 48)" class="i">input</span> <span class="o">=</span> <span class="c">// Some code</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>Data-Types</h2>
+<p>Other than object-oriented languages the key concept of <em>functional programming</em> is a separation
+between <em>data</em> and <em>behaviour</em>. In <em>OO</em> programming we use <em>classes</em>. Classes can contain
+public/private fields to save data, and provide methods for working with this data.</p>
+<p>In a <em>functional-language</em> instead we usually define our data-types as separate immutable data.
+We then provide (pure) functions that gets immutable data as input, and generate some new data
+as output. Because working with data is so important, a functional language offers more than just
+classes to define data-types. Besides classes we can use <em>tuples</em>, <em>records</em> and
+<em>discriminated unions</em>.</p>
+<h3>Tuples in C#</h3>
+<p>Tuples are also present in C#. There already exists as a <code>Tuple</code> class. But working with them
+is not so convenient as in F#. Anyway let's quickly look at how you use them.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">var</span> position <span class="o">=</span> Tuple.Create(<span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span>); <span class="c">// The type is: Tuple&lt;int,int,int&gt;</span>
+<span class="k">var</span> x <span class="o">=</span> position.Item<span class="n">1</span>; <span class="c">// 3</span>
+<span class="k">var</span> y <span class="o">=</span> position.Item<span class="n">2</span>; <span class="c">// 4</span>
+<span class="k">var</span> z <span class="o">=</span> position.Item<span class="n">3</span>; <span class="c">// 5</span>
+</code></pre></td></tr></table>
+<p>Tuples are a good way for intermediate types. If you easily want to pass some values as
+<em>one unit</em> to a function. But more often they are used as a result. So you can easily return
+multiple different values from a function.</p>
+<h3>Tuples in F#</h3>
+<p>Working with Tuples is much easier in F#</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs28', 49)" onmouseover="showTip(event, 'fs28', 49)" class="i">position</span> <span class="o">=</span> <span class="n">3</span>,<span class="n">4</span>,<span class="n">5</span>  <span class="c">// The type is: int * int * int</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs29', 50)" onmouseover="showTip(event, 'fs29', 50)" class="i">x</span>,<span onmouseout="hideTip(event, 'fs30', 51)" onmouseover="showTip(event, 'fs30', 51)" class="i">y</span>,<span onmouseout="hideTip(event, 'fs31', 52)" onmouseover="showTip(event, 'fs31', 52)" class="i">z</span>    <span class="o">=</span> <span onmouseout="hideTip(event, 'fs28', 53)" onmouseover="showTip(event, 'fs28', 53)" class="i">position</span>
+</code></pre></td>
+</tr>
+</table>
+<p>You create Tuples just by separating values with a comma. You can extract a Tuple with
+a <code>let</code> definition. This way you can easily create a function that return multiple data
+at once. Tuples don't must contain the same types.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 54)" onmouseover="showTip(event, 'fs32', 54)" class="f">someFunction</span> <span onmouseout="hideTip(event, 'fs20', 55)" onmouseover="showTip(event, 'fs20', 55)" class="i">x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs20', 56)" onmouseover="showTip(event, 'fs20', 56)" class="i">x</span>, <span onmouseout="hideTip(event, 'fs20', 57)" onmouseover="showTip(event, 'fs20', 57)" class="i">x</span><span class="o">*</span><span class="n">2</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This function for example returns a Tuple with two elements. The input itself, and the input
+multiplied by Two.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 58)" onmouseover="showTip(event, 'fs33', 58)" class="i">result</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 59)" onmouseover="showTip(event, 'fs32', 59)" class="f">someFunction</span> <span class="n">10</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs29', 60)" onmouseover="showTip(event, 'fs29', 60)" class="i">x</span>, <span onmouseout="hideTip(event, 'fs30', 61)" onmouseover="showTip(event, 'fs30', 61)" class="i">y</span>   <span class="o">=</span> <span onmouseout="hideTip(event, 'fs33', 62)" onmouseover="showTip(event, 'fs33', 62)" class="i">result</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We also can write it in one line</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs29', 63)" onmouseover="showTip(event, 'fs29', 63)" class="i">x</span>,<span onmouseout="hideTip(event, 'fs30', 64)" onmouseover="showTip(event, 'fs30', 64)" class="i">y</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 65)" onmouseover="showTip(event, 'fs32', 65)" class="f">someFunction</span> <span class="n">10</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Other than C#, tuples have its own type signature. Instead of a Generic Class like <code>Tuple&lt;int,int,int&gt;</code>
+a tuple is built into the language itself. They will be represented as <code>int * int * int</code> as a type.
+<code>int * float * string * Person</code> would be a four element tuple (quadruple) that contains an <code>int</code> a <code>float</code>
+a <code>string</code> and a <code>Person</code> in that <strong>exact</strong> order.</p>
+<h3>Records in F#</h3>
+<p>Working with tuples is good for intermediate function, for example if you create Pipelines like you
+see them with LINQ in C#. They are also good for grouping two or three elements, but as soon you have
+have more elements, they are unhandy to work with. An alternative to this is a Record type. If
+you know JavaScript you can compare them just to an object. Or a hash in Perl. The only difference
+is that they are static typed. So you must define a type beforehand.</p>
+<p>Records are planned as a feature in C# 7.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs34', 66)" onmouseover="showTip(event, 'fs34', 66)" class="t">Human</span> <span class="o">=</span> {
+    <span onmouseout="hideTip(event, 'fs35', 67)" onmouseover="showTip(event, 'fs35', 67)" class="i">Id</span><span class="o">:</span>        <span onmouseout="hideTip(event, 'fs14', 68)" onmouseover="showTip(event, 'fs14', 68)" class="t">int</span>
+    <span onmouseout="hideTip(event, 'fs36', 69)" onmouseover="showTip(event, 'fs36', 69)" class="i">FirstName</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs15', 70)" onmouseover="showTip(event, 'fs15', 70)" class="t">string</span>
+    <span onmouseout="hideTip(event, 'fs37', 71)" onmouseover="showTip(event, 'fs37', 71)" class="i">LastName</span><span class="o">:</span>  <span onmouseout="hideTip(event, 'fs15', 72)" onmouseover="showTip(event, 'fs15', 72)" class="t">string</span>
+    <span onmouseout="hideTip(event, 'fs38', 73)" onmouseover="showTip(event, 'fs38', 73)" class="i">Born</span><span class="o">:</span>      <span onmouseout="hideTip(event, 'fs2', 74)" onmouseover="showTip(event, 'fs2', 74)" class="t">DateTime</span>
+}
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs39', 75)" onmouseover="showTip(event, 'fs39', 75)" class="i">me</span> <span class="o">=</span> {
+    <span class="i">Id</span>        <span class="o">=</span> <span class="n">1</span>
+    <span class="i">FirstName</span> <span class="o">=</span> <span class="s">&quot;David&quot;</span>
+    <span class="i">LastName</span>  <span class="o">=</span> <span class="s">&quot;Rab&quot;</span>
+    <span class="i">Born</span>      <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 76)" onmouseover="showTip(event, 'fs2', 76)" class="t">DateTime</span>(<span class="n">1983</span>, <span class="n">02</span>, <span class="n">19</span>)
+}
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs40', 77)" onmouseover="showTip(event, 'fs40', 77)" class="i">age</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 78)" onmouseover="showTip(event, 'fs2', 78)" class="t">DateTime</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs41', 79)" onmouseover="showTip(event, 'fs41', 79)" class="i">Today</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs42', 80)" onmouseover="showTip(event, 'fs42', 80)" class="i">Year</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs39', 81)" onmouseover="showTip(event, 'fs39', 81)" class="i">me</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs38', 82)" onmouseover="showTip(event, 'fs38', 82)" class="i">Born</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs42', 83)" onmouseover="showTip(event, 'fs42', 83)" class="i">Year</span>
+<span onmouseout="hideTip(event, 'fs43', 84)" onmouseover="showTip(event, 'fs43', 84)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s"> </span><span class="pf">%s</span><span class="s"> is currently </span><span class="pf">%d</span><span class="s"> years old&quot;</span> <span onmouseout="hideTip(event, 'fs39', 85)" onmouseover="showTip(event, 'fs39', 85)" class="i">me</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 86)" onmouseover="showTip(event, 'fs36', 86)" class="i">FirstName</span> <span onmouseout="hideTip(event, 'fs39', 87)" onmouseover="showTip(event, 'fs39', 87)" class="i">me</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 88)" onmouseover="showTip(event, 'fs37', 88)" class="i">LastName</span> <span onmouseout="hideTip(event, 'fs40', 89)" onmouseover="showTip(event, 'fs40', 89)" class="i">age</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs44', 90)" onmouseover="showTip(event, 'fs44', 90)" class="i">newMe</span> <span class="o">=</span> {<span onmouseout="hideTip(event, 'fs39', 91)" onmouseover="showTip(event, 'fs39', 91)" class="i">me</span> <span class="k">with</span> <span class="i">LastName</span> <span class="o">=</span> <span class="s">&quot;Raab&quot;</span>}
+<span onmouseout="hideTip(event, 'fs43', 92)" onmouseover="showTip(event, 'fs43', 92)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s"> </span><span class="pf">%s</span><span class="s"> is currently </span><span class="pf">%d</span><span class="s"> years old&quot;</span> <span onmouseout="hideTip(event, 'fs39', 93)" onmouseover="showTip(event, 'fs39', 93)" class="i">me</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 94)" onmouseover="showTip(event, 'fs36', 94)" class="i">FirstName</span>    <span onmouseout="hideTip(event, 'fs39', 95)" onmouseover="showTip(event, 'fs39', 95)" class="i">me</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 96)" onmouseover="showTip(event, 'fs37', 96)" class="i">LastName</span>    <span onmouseout="hideTip(event, 'fs40', 97)" onmouseover="showTip(event, 'fs40', 97)" class="i">age</span>
+<span onmouseout="hideTip(event, 'fs43', 98)" onmouseover="showTip(event, 'fs43', 98)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s"> </span><span class="pf">%s</span><span class="s"> is currently </span><span class="pf">%d</span><span class="s"> years old&quot;</span> <span onmouseout="hideTip(event, 'fs44', 99)" onmouseover="showTip(event, 'fs44', 99)" class="i">newMe</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs36', 100)" onmouseover="showTip(event, 'fs36', 100)" class="i">FirstName</span> <span onmouseout="hideTip(event, 'fs44', 101)" onmouseover="showTip(event, 'fs44', 101)" class="i">newMe</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 102)" onmouseover="showTip(event, 'fs37', 102)" class="i">LastName</span> <span onmouseout="hideTip(event, 'fs40', 103)" onmouseover="showTip(event, 'fs40', 103)" class="i">age</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This code will produce the output:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="console">David Rab is currently 33 years old
+David Rab is currently 33 years old
+David Raab is currently 33 years old
+</code></pre></td></tr></table>
+<p>Defining a Record needs explicit type annotations. Creating
+a Record is pretty easy. You just use the <code>{ ... }</code> syntax. This is nearly identical to JavaScript.
+As <em>functional-languages</em> prefer <em>immutability</em> a Record type itself is also <em>immutable</em> by default.
+It also has default equality and comparison implementations.</p>
+<p>There exists a special <em>copy and update</em> operation. It is <code>{record with newField = newValue }</code>. You
+also can set multiple fields at once. As seen in the example. This creates a new record and doesn't
+modify the old record.</p>
+<p>You can access member of a record with a dot. Records also can be deeply nested, so
+you can create hierarchical data-structures.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs45', 104)" onmouseover="showTip(event, 'fs45', 104)" class="t">Attributes</span> <span class="o">=</span> {
+    <span onmouseout="hideTip(event, 'fs46', 105)" onmouseover="showTip(event, 'fs46', 105)" class="i">Strength</span><span class="o">:</span>     <span onmouseout="hideTip(event, 'fs14', 106)" onmouseover="showTip(event, 'fs14', 106)" class="t">int</span>
+    <span onmouseout="hideTip(event, 'fs47', 107)" onmouseover="showTip(event, 'fs47', 107)" class="i">Dexterity</span><span class="o">:</span>    <span onmouseout="hideTip(event, 'fs14', 108)" onmouseover="showTip(event, 'fs14', 108)" class="t">int</span>
+    <span onmouseout="hideTip(event, 'fs48', 109)" onmouseover="showTip(event, 'fs48', 109)" class="i">Intelligence</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs14', 110)" onmouseover="showTip(event, 'fs14', 110)" class="t">int</span>
+    <span onmouseout="hideTip(event, 'fs49', 111)" onmouseover="showTip(event, 'fs49', 111)" class="i">Vitality</span><span class="o">:</span>     <span onmouseout="hideTip(event, 'fs14', 112)" onmouseover="showTip(event, 'fs14', 112)" class="t">int</span>
+}
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs50', 113)" onmouseover="showTip(event, 'fs50', 113)" class="t">CaharacterSheet</span> <span class="o">=</span> {
+    <span onmouseout="hideTip(event, 'fs51', 114)" onmouseover="showTip(event, 'fs51', 114)" class="i">Name</span><span class="o">:</span>      <span onmouseout="hideTip(event, 'fs15', 115)" onmouseover="showTip(event, 'fs15', 115)" class="t">string</span>
+    <span onmouseout="hideTip(event, 'fs52', 116)" onmouseover="showTip(event, 'fs52', 116)" class="i">Attribute</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs45', 117)" onmouseover="showTip(event, 'fs45', 117)" class="t">Attributes</span>
+}
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs53', 118)" onmouseover="showTip(event, 'fs53', 118)" class="i">warrior</span> <span class="o">=</span> {
+    <span class="i">Name</span> <span class="o">=</span> <span class="s">&quot;Conan&quot;</span>
+    <span class="i">Attribute</span> <span class="o">=</span> 
+    {
+        <span class="i">Strength</span> <span class="o">=</span> <span class="n">1000</span>
+        <span class="i">Dexterity</span> <span class="o">=</span> <span class="n">200</span>
+        <span class="i">Intelligence</span> <span class="o">=</span> <span class="n">3</span>
+        <span class="i">Vitality</span> <span class="o">=</span> <span class="n">1000</span>
+    }
+}
+
+<span onmouseout="hideTip(event, 'fs43', 119)" onmouseover="showTip(event, 'fs43', 119)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s"> was a Warrior with Strength of </span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs53', 120)" onmouseover="showTip(event, 'fs53', 120)" class="i">warrior</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs51', 121)" onmouseover="showTip(event, 'fs51', 121)" class="i">Name</span> <span onmouseout="hideTip(event, 'fs53', 122)" onmouseover="showTip(event, 'fs53', 122)" class="i">warrior</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs52', 123)" onmouseover="showTip(event, 'fs52', 123)" class="i">Attribute</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs46', 124)" onmouseover="showTip(event, 'fs46', 124)" class="i">Strength</span>
+</code></pre></td>
+</tr>
+</table>
+<h3>Discriminated Unions in F#</h3>
+<p>A Discriminated Union (DU) also doesn't currently exists in C#, but they are also planed as a feature for C# 7.
+A DU is important as they provide a <em>OR</em> type. When you look at classes, tuples or records all of them are
+basically <em>AND</em> types. All of those types group some data-together, but you always have all of them
+at the same time. But what happens if you want to express some kind of <em>Either A or B</em>? The closest
+thing you can get are <em>enums</em> in C#, but <em>enums</em> cannot contain additional values for each case.</p>
+<p>DU are important, because if a language supports both kinds, we also say that it has an
+<em>Algebraic type-system</em>. Let's assume we have a shopping system, and we want to express that a
+user can pay with different methods.</p>
+<ol>
+<li><strong>Cash</strong> -- No additional data needed</li>
+<li><strong>PayPal</strong> -- We need the email address</li>
+<li><strong>CreditCard</strong> -- We need the credit card number</li>
+</ol>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs54', 125)" onmouseover="showTip(event, 'fs54', 125)" class="t">Payment</span> <span class="o">=</span>
+    | <span onmouseout="hideTip(event, 'fs55', 126)" onmouseover="showTip(event, 'fs55', 126)" class="p">Cash</span>
+    | <span onmouseout="hideTip(event, 'fs56', 127)" onmouseover="showTip(event, 'fs56', 127)" class="p">PayPal</span>     <span class="k">of</span> <span onmouseout="hideTip(event, 'fs15', 128)" onmouseover="showTip(event, 'fs15', 128)" class="t">string</span>
+    | <span onmouseout="hideTip(event, 'fs57', 129)" onmouseover="showTip(event, 'fs57', 129)" class="p">CreditCard</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs15', 130)" onmouseover="showTip(event, 'fs15', 130)" class="t">string</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs58', 131)" onmouseover="showTip(event, 'fs58', 131)" class="f">inform</span> <span onmouseout="hideTip(event, 'fs59', 132)" onmouseover="showTip(event, 'fs59', 132)" class="i">payment</span> <span class="o">=</span> 
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs59', 133)" onmouseover="showTip(event, 'fs59', 133)" class="i">payment</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs55', 134)" onmouseover="showTip(event, 'fs55', 134)" class="p">Cash</span>          <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs43', 135)" onmouseover="showTip(event, 'fs43', 135)" class="f">printfn</span> <span class="s">&quot;User payed cash&quot;</span>
+    | <span onmouseout="hideTip(event, 'fs56', 136)" onmouseover="showTip(event, 'fs56', 136)" class="p">PayPal</span> <span onmouseout="hideTip(event, 'fs60', 137)" onmouseover="showTip(event, 'fs60', 137)" class="i">email</span>  <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs43', 138)" onmouseover="showTip(event, 'fs43', 138)" class="f">printfn</span> <span class="s">&quot;User payed with PayPal. Email: </span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs60', 139)" onmouseover="showTip(event, 'fs60', 139)" class="i">email</span>
+    | <span onmouseout="hideTip(event, 'fs57', 140)" onmouseover="showTip(event, 'fs57', 140)" class="p">CreditCard</span> <span onmouseout="hideTip(event, 'fs61', 141)" onmouseover="showTip(event, 'fs61', 141)" class="i">no</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs43', 142)" onmouseover="showTip(event, 'fs43', 142)" class="f">printfn</span> <span class="s">&quot;User payed with CC. No: </span><span class="pf">%s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs61', 143)" onmouseover="showTip(event, 'fs61', 143)" class="i">no</span>
+
+<span onmouseout="hideTip(event, 'fs58', 144)" onmouseover="showTip(event, 'fs58', 144)" class="f">inform</span> <span onmouseout="hideTip(event, 'fs55', 145)" onmouseover="showTip(event, 'fs55', 145)" class="p">Cash</span>
+<span onmouseout="hideTip(event, 'fs58', 146)" onmouseover="showTip(event, 'fs58', 146)" class="f">inform</span> (<span onmouseout="hideTip(event, 'fs56', 147)" onmouseover="showTip(event, 'fs56', 147)" class="p">PayPal</span> <span class="s">&quot;foo@example.com&quot;</span>)
+<span onmouseout="hideTip(event, 'fs58', 148)" onmouseover="showTip(event, 'fs58', 148)" class="f">inform</span> (<span onmouseout="hideTip(event, 'fs57', 149)" onmouseover="showTip(event, 'fs57', 149)" class="p">CreditCard</span> <span class="s">&quot;123456789&quot;</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>The above code will produce an output like</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="console">User payed cash
+User payed with PayPal. Email: foo@example.com
+User payed with CC. No: 123456789
+</code></pre></td></tr></table>
+<p>Here <code>inform</code> is a function with one argument <code>payment</code>. Still note that we don't need any kind of
+<em>type-annotation</em>. We use <em>pattern matching</em> on payment. Just the fact that we use <code>Cash</code>, <code>PayPal</code>
+and <code>CreditCard</code> the F# Compiler can automatically infer that the argument has to be of type <code>Payment</code>.</p>
+<p><em>Pattern matching</em> is a kind of <em>switch</em> statement but more powerful, because it not only matches on
+the different cases, you also can extract the additional values that are carried within each case.</p>
+<p>Also note the syntax <code>inform (PayPal "foo@example.com")</code> We need the braces here not for invocations.
+We need them for grouping. This is probably one source of confusion for people coming from C-style
+languages. If we wouldn't use the braces and write something like <code>inform PayPal "foo@example.com"</code>
+we would try to invoke the <code>inform</code> function with two arguments. The first argument would be <code>PayPal</code>
+and the second argument would be <code>"foo@exmaple.com"</code>. That would fail because <code>inform</code> is not a two
+argument function. We first need to create a value. That is just done with <code>PayPal "foo@example.com"</code>
+and we want the result to pass to our function. That is why we need to add braces around our call.</p>
+<p>This is comparable to just simple maths. <code>3 + 4 * 5</code> would yield in <code>23</code>. If we otherwise write
+<code>(3 + 4) * 5</code> we would get <code>35</code>. Braces are just grouping constructs! This becomes more important
+if we have something like these.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">someFunction</span> (<span class="i">Foo</span> <span class="i">x</span>) (<span class="i">Bar</span> <span class="i">z</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>This would be a Function call with two arguments. The first argument is the result of <code>Foo x</code>, the
+second argument would be the Result of <code>Bar z</code>. Coming from a C-style language people often try to read it as</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">someFunction(Foo x)
+</code></pre></td></tr></table>
+<p>as a single function invocation with one argument, and they see a trailing <code>(Bar z)</code> and they don't know
+what it stands for. Actually converting such a function call to C# would result in something like this</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">someFunction(<span class="k">new</span> Foo(x), <span class="k">new</span> Bar(z));
+</code></pre></td></tr></table>
+<p>The big advantage of Discriminated Unions is that each case can contain objects, tuples, records or
+other discriminated unions as values. It even can contain itself as an element. In this way you
+can easily build recursive data-structures.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs62', 150)" onmouseover="showTip(event, 'fs62', 150)" class="t">Markdown</span> <span class="o">=</span>
+    | <span onmouseout="hideTip(event, 'fs63', 151)" onmouseover="showTip(event, 'fs63', 151)" class="p">NewLine</span>
+    | <span onmouseout="hideTip(event, 'fs64', 152)" onmouseover="showTip(event, 'fs64', 152)" class="p">Literal</span>    <span class="k">of</span> <span onmouseout="hideTip(event, 'fs15', 153)" onmouseover="showTip(event, 'fs15', 153)" class="t">string</span>
+    | <span onmouseout="hideTip(event, 'fs65', 154)" onmouseover="showTip(event, 'fs65', 154)" class="p">Bold</span>       <span class="k">of</span> <span onmouseout="hideTip(event, 'fs15', 155)" onmouseover="showTip(event, 'fs15', 155)" class="t">string</span>
+    | <span onmouseout="hideTip(event, 'fs66', 156)" onmouseover="showTip(event, 'fs66', 156)" class="p">InlineCode</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs15', 157)" onmouseover="showTip(event, 'fs15', 157)" class="t">string</span>
+    | <span onmouseout="hideTip(event, 'fs67', 158)" onmouseover="showTip(event, 'fs67', 158)" class="p">Block</span>      <span class="k">of</span> <span onmouseout="hideTip(event, 'fs62', 159)" onmouseover="showTip(event, 'fs62', 159)" class="t">Markdown</span> <span onmouseout="hideTip(event, 'fs68', 160)" onmouseover="showTip(event, 'fs68', 160)" class="t">list</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs69', 161)" onmouseover="showTip(event, 'fs69', 161)" class="i">document</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs67', 162)" onmouseover="showTip(event, 'fs67', 162)" class="p">Block</span> [
+        <span onmouseout="hideTip(event, 'fs64', 163)" onmouseover="showTip(event, 'fs64', 163)" class="p">Literal</span> <span class="s">&quot;Hello&quot;</span>; <span onmouseout="hideTip(event, 'fs65', 164)" onmouseover="showTip(event, 'fs65', 164)" class="p">Bold</span> <span class="s">&quot;World!&quot;</span>; <span onmouseout="hideTip(event, 'fs63', 165)" onmouseover="showTip(event, 'fs63', 165)" class="p">NewLine</span>
+        <span onmouseout="hideTip(event, 'fs64', 166)" onmouseover="showTip(event, 'fs64', 166)" class="p">Literal</span> <span class="s">&quot;InlineCode of&quot;</span>; <span onmouseout="hideTip(event, 'fs66', 167)" onmouseover="showTip(event, 'fs66', 167)" class="p">InlineCode</span> <span class="s">&quot;let sum x y = x + y&quot;</span>; <span onmouseout="hideTip(event, 'fs63', 168)" onmouseover="showTip(event, 'fs63', 168)" class="p">NewLine</span>
+        <span onmouseout="hideTip(event, 'fs67', 169)" onmouseover="showTip(event, 'fs67', 169)" class="p">Block</span> [
+            <span onmouseout="hideTip(event, 'fs64', 170)" onmouseover="showTip(event, 'fs64', 170)" class="p">Literal</span> <span class="s">&quot;This is the end&quot;</span>
+        ]
+    ]
+
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs70', 171)" onmouseover="showTip(event, 'fs70', 171)" class="f">produceHtml</span> <span onmouseout="hideTip(event, 'fs71', 172)" onmouseover="showTip(event, 'fs71', 172)" class="i">markdown</span> (<span onmouseout="hideTip(event, 'fs72', 173)" onmouseover="showTip(event, 'fs72', 173)" class="i">sb</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs5', 174)" onmouseover="showTip(event, 'fs5', 174)" class="t">StringBuilder</span>) <span class="o">=</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs71', 175)" onmouseover="showTip(event, 'fs71', 175)" class="i">markdown</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs63', 176)" onmouseover="showTip(event, 'fs63', 176)" class="p">NewLine</span>         <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs72', 177)" onmouseover="showTip(event, 'fs72', 177)" class="i">sb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 178)" onmouseover="showTip(event, 'fs73', 178)" class="f">Append</span>(<span class="s">&quot;&lt;br/&gt;&quot;</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 179)" onmouseover="showTip(event, 'fs74', 179)" class="f">ignore</span>
+    | <span onmouseout="hideTip(event, 'fs64', 180)" onmouseover="showTip(event, 'fs64', 180)" class="p">Literal</span>    <span onmouseout="hideTip(event, 'fs75', 181)" onmouseover="showTip(event, 'fs75', 181)" class="i">str</span>  <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs72', 182)" onmouseover="showTip(event, 'fs72', 182)" class="i">sb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 183)" onmouseover="showTip(event, 'fs73', 183)" class="f">Append</span>(<span onmouseout="hideTip(event, 'fs75', 184)" onmouseover="showTip(event, 'fs75', 184)" class="i">str</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 185)" onmouseover="showTip(event, 'fs74', 185)" class="f">ignore</span>
+    | <span onmouseout="hideTip(event, 'fs65', 186)" onmouseover="showTip(event, 'fs65', 186)" class="p">Bold</span>       <span onmouseout="hideTip(event, 'fs75', 187)" onmouseover="showTip(event, 'fs75', 187)" class="i">str</span>  <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs72', 188)" onmouseover="showTip(event, 'fs72', 188)" class="i">sb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 189)" onmouseover="showTip(event, 'fs76', 189)" class="f">AppendFormat</span>(<span class="s">&quot;&lt;strong&gt;{0}&lt;/strong&gt;&quot;</span>, <span onmouseout="hideTip(event, 'fs75', 190)" onmouseover="showTip(event, 'fs75', 190)" class="i">str</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 191)" onmouseover="showTip(event, 'fs74', 191)" class="f">ignore</span>
+    | <span onmouseout="hideTip(event, 'fs66', 192)" onmouseover="showTip(event, 'fs66', 192)" class="p">InlineCode</span> <span onmouseout="hideTip(event, 'fs77', 193)" onmouseover="showTip(event, 'fs77', 193)" class="i">code</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs72', 194)" onmouseover="showTip(event, 'fs72', 194)" class="i">sb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs76', 195)" onmouseover="showTip(event, 'fs76', 195)" class="f">AppendFormat</span>(<span class="s">&quot;&lt;code&gt;{0}&lt;/code&gt;&quot;</span>, <span onmouseout="hideTip(event, 'fs77', 196)" onmouseover="showTip(event, 'fs77', 196)" class="i">code</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 197)" onmouseover="showTip(event, 'fs74', 197)" class="f">ignore</span>
+    | <span onmouseout="hideTip(event, 'fs67', 198)" onmouseover="showTip(event, 'fs67', 198)" class="p">Block</span>  <span onmouseout="hideTip(event, 'fs78', 199)" onmouseover="showTip(event, 'fs78', 199)" class="i">markdown</span> <span class="k">-&gt;</span>
+        <span onmouseout="hideTip(event, 'fs72', 200)" onmouseover="showTip(event, 'fs72', 200)" class="i">sb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 201)" onmouseover="showTip(event, 'fs73', 201)" class="f">Append</span>(<span class="s">&quot;&lt;p&gt;&quot;</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 202)" onmouseover="showTip(event, 'fs74', 202)" class="f">ignore</span>
+        <span class="k">for</span> <span onmouseout="hideTip(event, 'fs79', 203)" onmouseover="showTip(event, 'fs79', 203)" class="i">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs78', 204)" onmouseover="showTip(event, 'fs78', 204)" class="i">markdown</span> <span class="k">do</span>
+            <span onmouseout="hideTip(event, 'fs70', 205)" onmouseover="showTip(event, 'fs70', 205)" class="f">produceHtml</span> <span onmouseout="hideTip(event, 'fs79', 206)" onmouseover="showTip(event, 'fs79', 206)" class="i">x</span> <span onmouseout="hideTip(event, 'fs72', 207)" onmouseover="showTip(event, 'fs72', 207)" class="i">sb</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 208)" onmouseover="showTip(event, 'fs74', 208)" class="f">ignore</span>
+        <span onmouseout="hideTip(event, 'fs72', 209)" onmouseover="showTip(event, 'fs72', 209)" class="i">sb</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 210)" onmouseover="showTip(event, 'fs73', 210)" class="f">Append</span>(<span class="s">&quot;&lt;/p&gt;&quot;</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs74', 211)" onmouseover="showTip(event, 'fs74', 211)" class="f">ignore</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs80', 212)" onmouseover="showTip(event, 'fs80', 212)" class="i">html</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 213)" onmouseover="showTip(event, 'fs5', 213)" class="t">StringBuilder</span>()
+<span onmouseout="hideTip(event, 'fs70', 214)" onmouseover="showTip(event, 'fs70', 214)" class="f">produceHtml</span> <span onmouseout="hideTip(event, 'fs69', 215)" onmouseover="showTip(event, 'fs69', 215)" class="i">document</span> <span onmouseout="hideTip(event, 'fs80', 216)" onmouseover="showTip(event, 'fs80', 216)" class="i">html</span>
+
+<span onmouseout="hideTip(event, 'fs43', 217)" onmouseover="showTip(event, 'fs43', 217)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s">&quot;</span> (<span onmouseout="hideTip(event, 'fs80', 218)" onmouseover="showTip(event, 'fs80', 218)" class="i">html</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs81', 219)" onmouseover="showTip(event, 'fs81', 219)" class="f">ToString</span>())
+</code></pre></td>
+</tr>
+</table>
+<p>Running the above code will produce us the following output</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="console">&lt;p&gt;Hello&lt;strong&gt;World!&lt;/strong&gt;&lt;br/&gt;InlineCode of&lt;code&gt;let sum x y = x + y&lt;/code&gt;&lt;br/&gt;&lt;p&gt;This is the end&lt;/p&gt;&lt;/p&gt;
+</code></pre></td></tr></table>
+<p>So we can easily create hierarchical data-structures, and with Pattern Matching we can easily write recursive
+function to traverse them.</p>
+<h3>List in F#</h3>
+<p>The example above already introduced lists. Otherwise a list in F# is different to the C# <code>List&lt;T&gt;</code> type.
+In C# you create a mutable <code>List&lt;T&gt;</code> object and you can directly <code>Add</code> items to. In F# on the other hand you
+create lists just with the syntax <code>[ ... ]</code> (Like in JavaScript). Otherwise elements get separated by <code>;</code>
+instead of <code>,</code>. This is often a source of confusion, because both styles are allowed but they mean something
+different.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs82', 220)" onmouseover="showTip(event, 'fs82', 220)" class="i">data</span> <span class="o">=</span> [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>]
+</code></pre></td>
+</tr>
+</table>
+<p>This is a List of <code>int</code>. And it contains four elements.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs83', 221)" onmouseover="showTip(event, 'fs83', 221)" class="i">data</span> <span class="o">=</span> [<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>,<span class="n">4</span>]
+</code></pre></td>
+</tr>
+</table>
+<p>This is a List of a Tuple <code>int * int * int * int</code> and it contains a single element. Remember <code>,</code> is
+for creating Tuples!</p>
+<p>Additional lists in F# are also immutable. They also provide default implementations of equality, comparison
+and so on. If you want to add elements to a list you have to create a new list. This can be easily done with
+<code>::</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs82', 222)" onmouseover="showTip(event, 'fs82', 222)" class="i">data</span>    <span class="o">=</span> [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>]
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs84', 223)" onmouseover="showTip(event, 'fs84', 223)" class="i">oneMore</span> <span class="o">=</span> <span class="n">5</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs82', 224)" onmouseover="showTip(event, 'fs82', 224)" class="i">data</span>
+</code></pre></td>
+</tr>
+</table>
+<p><code>oneMore</code> is now</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">[<span class="n">5</span>;<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>]
+</code></pre></td>
+</tr>
+</table>
+<p>note that <code>data</code> is unchanged and is still a four element list. The way how lists are build (<em>immutable</em>
+and as <em>linked-list</em>) means adding and removing from the beginning is an efficient operation <em>O(1)</em>.</p>
+<p>There are various functions inside the <code>List</code> module to transform lists itself. With <code>[|1;2;3|]</code>
+we also can create <em>mutable fixed-size array</em>. There also exists a <code>Array</code> Module with nearly the same
+functions as in the <code>List</code> module.</p>
+<h2>Composition and Piping</h2>
+<p>The last concepts we look at in our introduction is the concept of <em>Composition</em> and <em>Piping</em>. Both
+are very important in functional languages, as more complex logic is achieved by composing of functions.
+Compose ability is actually pretty easy. Let's assume we have a function that takes an <code>int</code> as its input
+and a <code>string</code> as its output. In C# we would usually define such a <em>method interface</em> in that way.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">string</span> SomeMethod(<span class="k">int</span> x);
+</code></pre></td></tr></table>
+<p>This could be for example part of an <code>interface</code> definition in C#. In F# we would define such an interface
+just as</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs14', 225)" onmouseover="showTip(event, 'fs14', 225)" class="f">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs15', 226)" onmouseover="showTip(event, 'fs15', 226)" class="i">string</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This definition means. A function that has an <code>int</code> as an input, and will return a <code>string</code>. Note that
+we don't specify a function name. Every function itself is actually an interface of its own. Something
+like this also exists in C#. Usually expressed as either <code>Action</code> or <code>Func</code>. We also could have written.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp">Func&lt;<span class="k">int</span>,<span class="k">string</span>&gt;
+</code></pre></td></tr></table>
+<p>In C# <code>Action</code> and <code>Func</code> types are usually used in Methods if we want to expect a function as an argument.
+In C# you need <code>Action</code> to describe function with a <code>void</code> return value.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Func</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs14', 227)" onmouseover="showTip(event, 'fs14', 227)" class="i">int</span>,<span onmouseout="hideTip(event, 'fs15', 228)" onmouseover="showTip(event, 'fs15', 228)" class="i">string</span><span class="o">&gt;</span>
+<span onmouseout="hideTip(event, 'fs15', 229)" onmouseover="showTip(event, 'fs15', 229)" class="i">string</span> <span class="i">SomeFunction</span>(<span onmouseout="hideTip(event, 'fs14', 230)" onmouseover="showTip(event, 'fs14', 230)" class="i">int</span> <span class="i">x</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>And Action means</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Action</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs14', 231)" onmouseover="showTip(event, 'fs14', 231)" class="i">int</span>,<span onmouseout="hideTip(event, 'fs15', 232)" onmouseover="showTip(event, 'fs15', 232)" class="i">string</span><span class="o">&gt;</span>
+<span class="k">void</span> <span class="i">SomeFunction</span>(<span onmouseout="hideTip(event, 'fs14', 233)" onmouseover="showTip(event, 'fs14', 233)" class="i">int</span> <span class="i">x</span>, <span onmouseout="hideTip(event, 'fs15', 234)" onmouseover="showTip(event, 'fs15', 234)" class="i">string</span> <span class="i">y</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>In F# we just have a sepcial type named <code>unit</code> to express <em>Nothing</em>. So we can write</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs14', 235)" onmouseover="showTip(event, 'fs14', 235)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs15', 236)" onmouseover="showTip(event, 'fs15', 236)" class="i">string</span>
+<span onmouseout="hideTip(event, 'fs14', 237)" onmouseover="showTip(event, 'fs14', 237)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs85', 238)" onmouseover="showTip(event, 'fs85', 238)" class="i">unit</span>
+<span onmouseout="hideTip(event, 'fs14', 239)" onmouseover="showTip(event, 'fs14', 239)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs15', 240)" onmouseover="showTip(event, 'fs15', 240)" class="i">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs85', 241)" onmouseover="showTip(event, 'fs85', 241)" class="i">unit</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The Last line can be read as. A function with two arguments <code>int</code> and <code>string</code> and it will
+return <code>unit</code> (Nothing).</p>
+<p>Now let's assume we have two functions with the following signatures</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs15', 242)" onmouseover="showTip(event, 'fs15', 242)" class="i">string</span>   <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 243)" onmouseover="showTip(event, 'fs14', 243)" class="i">int</span> <span onmouseout="hideTip(event, 'fs68', 244)" onmouseover="showTip(event, 'fs68', 244)" class="i">list</span>
+<span onmouseout="hideTip(event, 'fs14', 245)" onmouseover="showTip(event, 'fs14', 245)" class="i">int</span> <span onmouseout="hideTip(event, 'fs68', 246)" onmouseover="showTip(event, 'fs68', 246)" class="i">list</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 247)" onmouseover="showTip(event, 'fs14', 247)" class="i">int</span>
+</code></pre></td>
+</tr>
+</table>
+<p>So we have a function that has a <code>string</code> as it's input, and a <code>int list</code> (List of int) as its
+output. Our second functions takes a <code>int list</code> as its input, and will produce just a <code>int</code>
+as its output. Looking at those signatures we now can compose them. Even if we don't now what
+those functions do. We just know that the output of the first function can be directly given
+as the input of the second function.</p>
+<p>We can directly create a function with a <code>string</code> input returning an <code>int</code>.
+This kind of idea is what we name <em>composing</em>. In F# we have a special operator for this
+kind of composition. The <code>&gt;&gt;</code> operator.</p>
+<p>But let's work step by step to it. Let's assume we have a <code>parseInts</code> function
+that takes a string, splits a string on ',' and parses every number as an <code>int</code>
+and returns <code>int list</code>. The signature would be <code>string -&gt; int list</code>.</p>
+<p>We then have another function <code>sumList</code> that just takes a <code>int list</code> and sums all
+numbers together returning an <code>int</code>. We could use those two functions like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs101', 274)" onmouseover="showTip(event, 'fs101', 274)" class="i">nums</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs91', 275)" onmouseover="showTip(event, 'fs91', 275)" class="f">parseInts</span> <span class="s">&quot;1,2,3,4,5&quot;</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs102', 276)" onmouseover="showTip(event, 'fs102', 276)" class="i">sum</span>  <span class="o">=</span> <span onmouseout="hideTip(event, 'fs98', 277)" onmouseover="showTip(event, 'fs98', 277)" class="f">sumList</span> <span onmouseout="hideTip(event, 'fs101', 278)" onmouseover="showTip(event, 'fs101', 278)" class="i">nums</span> <span class="c">// 15</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We also could create a new function that combines these two steps into a new function</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs103', 279)" onmouseover="showTip(event, 'fs103', 279)" class="f">strToSum</span> <span onmouseout="hideTip(event, 'fs104', 280)" onmouseover="showTip(event, 'fs104', 280)" class="i">stringList</span> <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs105', 281)" onmouseover="showTip(event, 'fs105', 281)" class="i">nums</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs91', 282)" onmouseover="showTip(event, 'fs91', 282)" class="f">parseInts</span> <span onmouseout="hideTip(event, 'fs104', 283)" onmouseover="showTip(event, 'fs104', 283)" class="i">stringList</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs106', 284)" onmouseover="showTip(event, 'fs106', 284)" class="i">sum</span>  <span class="o">=</span> <span onmouseout="hideTip(event, 'fs98', 285)" onmouseover="showTip(event, 'fs98', 285)" class="f">sumList</span> <span onmouseout="hideTip(event, 'fs105', 286)" onmouseover="showTip(event, 'fs105', 286)" class="i">nums</span>
+    <span onmouseout="hideTip(event, 'fs106', 287)" onmouseover="showTip(event, 'fs106', 287)" class="i">sum</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We now have a function <code>strToSum</code> that goes directly from <code>string -&gt; int</code></p>
+<p>But these kind of operation is actually pretty generic. As this kind of composing works for
+any kind of function with any kind of type. In general we can say. When we have two functions.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">&#39;</span><span class="i">a</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">b</span>
+<span class="o">&#39;</span><span class="i">b</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">c</span>
+</code></pre></td>
+</tr>
+</table>
+<p>we can compose those two into a new function</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">&#39;</span><span class="i">a</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">c</span>
+</code></pre></td>
+</tr>
+</table>
+<p>So let's write a <code>compose</code> function that does that kind of stuff for us.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs107', 288)" onmouseover="showTip(event, 'fs107', 288)" class="f">compose</span> <span onmouseout="hideTip(event, 'fs108', 289)" onmouseover="showTip(event, 'fs108', 289)" class="f">f</span> <span onmouseout="hideTip(event, 'fs109', 290)" onmouseover="showTip(event, 'fs109', 290)" class="f">g</span> <span onmouseout="hideTip(event, 'fs110', 291)" onmouseover="showTip(event, 'fs110', 291)" class="i">x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs109', 292)" onmouseover="showTip(event, 'fs109', 292)" class="f">g</span> (<span onmouseout="hideTip(event, 'fs108', 293)" onmouseover="showTip(event, 'fs108', 293)" class="f">f</span> <span onmouseout="hideTip(event, 'fs110', 294)" onmouseover="showTip(event, 'fs110', 294)" class="i">x</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>So let's look at the implementation. We have a function <code>compose</code> with three arguments. <code>f</code>
+is expected to be a function. The same is true for <code>g</code>. <code>x</code> is just some kind of value. What we
+first do is</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">(<span class="i">f</span> <span class="i">x</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>meaning we will call our <code>f</code> function with the <code>x</code> value. The Result of that is passed to the <code>g</code>
+function. The result of the <code>g</code> function is then returned as a value. We also could have written it
+like this.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="i">compose</span> <span class="i">f</span> <span class="i">g</span> <span class="i">x</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="i">y</span> <span class="o">=</span> <span class="i">f</span> <span class="i">x</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs111', 295)" onmouseover="showTip(event, 'fs111', 295)" class="i">z</span> <span class="o">=</span> <span class="i">g</span> <span class="i">y</span>
+    <span onmouseout="hideTip(event, 'fs111', 296)" onmouseover="showTip(event, 'fs111', 296)" class="i">z</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The F# compiler automatically infers that <code>f</code> and <code>g</code> are functions.
+Just by using it like <code>f x</code> or <code>g y</code> the compiler knows that <code>f</code> and <code>g</code> must be
+functions with a single argument.</p>
+<p>But what kind of types do we have here? The answer is, they are generic. When we look at the type
+signature that the compiler created for us, it looks some kind of scary first. We have.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">val</span> <span class="i">compose</span> <span class="o">:</span> <span class="i">f</span><span class="o">:</span>(<span class="o">&#39;</span><span class="i">a</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">b</span>) <span class="k">-&gt;</span> <span class="i">g</span><span class="o">:</span>(<span class="o">&#39;</span><span class="i">b</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">c</span>) <span class="k">-&gt;</span> <span class="i">x</span><span class="o">:</span><span class="o">&#39;</span><span class="i">a</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">c</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Let's go over it step-by-step</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center"><p>Argument</p></th>
+<th align="center"><p>Signature</p></th>
+<th align="left"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><p>f</p></td>
+<td align="center"><p>('a -&gt; 'b)</p></td>
+<td align="left"><p>A function that goes from 'a to 'b</p></td>
+</tr>
+<tr class="even">
+<td align="center"><p>g</p></td>
+<td align="center"><p>('b -&gt; 'c)</p></td>
+<td align="left"><p>A function that goes from 'b to 'c</p></td>
+</tr>
+<tr class="odd">
+<td align="center"><p>x</p></td>
+<td align="center"><p>'a</p></td>
+<td align="left"><p>A value of type 'a</p></td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center"><p>'c</p></td>
+<td align="left"><p>It will return 'c</p></td>
+</tr>
+</tbody>
+</table>
+
+<p>Just by looking at the types we can examine what the function does. We have <code>'a</code> as a value and two
+functions. And we need to return a <code>'c</code>. So how do we get a <code>'c</code>?</p>
+<p>At first the only thing that function can do is pass the <code>x</code> value (a <code>'a</code>) into the <code>f</code> function. That will
+return a <code>'b</code> value. After we have a <code>'b</code> value it only can pass that value into the <code>g</code> function.
+Finally this returns a <code>'c</code> that the <code>compose</code> function then returns.</p>
+<p>We now could use <code>compose</code> like this.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs102', 297)" onmouseover="showTip(event, 'fs102', 297)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs107', 298)" onmouseover="showTip(event, 'fs107', 298)" class="f">compose</span> <span onmouseout="hideTip(event, 'fs91', 299)" onmouseover="showTip(event, 'fs91', 299)" class="f">parseInts</span> <span onmouseout="hideTip(event, 'fs98', 300)" onmouseover="showTip(event, 'fs98', 300)" class="f">sumList</span> <span class="s">&quot;1,2,3,4,5&quot;</span> <span class="c">// 15</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Here we now call <code>compose</code> with three arguments. We provide the <code>parseInts</code> function itself as a value.
+We then provide the <code>sumList</code> function as a the second argument. And our third argument is our <code>"1,2,3,4,5"</code>
+string.</p>
+<p>The last thing we can do now. F# supports <em>omitting</em> arguments from a function call. If you <em>omit</em> a value, you
+get a function back with the remaining arguments. Currently our <code>compose</code> function is a three arguments
+function. So what happens if we just provide the first two functions as arguments? We get a function back
+that is still waiting for the last third argument.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs112', 301)" onmouseover="showTip(event, 'fs112', 301)" class="f">strToSum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs107', 302)" onmouseover="showTip(event, 'fs107', 302)" class="f">compose</span> <span onmouseout="hideTip(event, 'fs91', 303)" onmouseover="showTip(event, 'fs91', 303)" class="f">parseInts</span> <span onmouseout="hideTip(event, 'fs98', 304)" onmouseover="showTip(event, 'fs98', 304)" class="f">sumList</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs113', 305)" onmouseover="showTip(event, 'fs113', 305)" class="i">result</span>   <span class="o">=</span> <span onmouseout="hideTip(event, 'fs112', 306)" onmouseover="showTip(event, 'fs112', 306)" class="f">strToSum</span> <span class="s">&quot;1,2,3,4,5&quot;</span> <span class="c">// 15</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This kind of composing is so common that we have a special operator <code>&gt;&gt;</code> for this. So all we really need to
+do is put &gt;&gt; between two functions, and we get a new function back! So what we are doing is</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">(<span onmouseout="hideTip(event, 'fs15', 307)" onmouseover="showTip(event, 'fs15', 307)" class="i">string</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 308)" onmouseover="showTip(event, 'fs14', 308)" class="i">int</span> <span onmouseout="hideTip(event, 'fs68', 309)" onmouseover="showTip(event, 'fs68', 309)" class="i">list</span>) <span class="o">&gt;</span><span class="o">&gt;</span> (<span onmouseout="hideTip(event, 'fs14', 310)" onmouseover="showTip(event, 'fs14', 310)" class="i">int</span> <span onmouseout="hideTip(event, 'fs68', 311)" onmouseover="showTip(event, 'fs68', 311)" class="i">list</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs14', 312)" onmouseover="showTip(event, 'fs14', 312)" class="i">int</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>and we just get a <code>string -&gt; int</code> back.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs112', 313)" onmouseover="showTip(event, 'fs112', 313)" class="f">strToSum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs91', 314)" onmouseover="showTip(event, 'fs91', 314)" class="f">parseInts</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs98', 315)" onmouseover="showTip(event, 'fs98', 315)" class="f">sumList</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs113', 316)" onmouseover="showTip(event, 'fs113', 316)" class="i">result</span>   <span class="o">=</span> <span onmouseout="hideTip(event, 'fs112', 317)" onmouseover="showTip(event, 'fs112', 317)" class="f">strToSum</span> <span class="s">&quot;1,2,3,4,5&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>So we can easily create new functions out of smaller functions. This is the essence of <em>functional programming</em>.
+We have <em>immutable data-types</em> that gets transformed from one type to another. And we compose functions
+together to create new functions. Note that we also could create such a <code>compose</code> function in C#.
+But because of a lack of some features in C#, such a function is less practical as it seems.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">static</span> Func&lt;A, C&gt; Compose&lt;A, B, C&gt;(Func&lt;A, B&gt; f, Func&lt;B, C&gt; g) {
+    <span class="k">return</span> input <span class="o">=</span><span class="o">&gt;</span> g(f(input));
+}
+</code></pre></td></tr></table>
+<p>But it is can help to understand what <em>composition</em> means.</p>
+<p>The remaining part is now <em>Piping</em> that is used more often in F#. Piping can be compared with Linux/Bash
+Pipes. For example in Bash you can do stuff like this.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="console">cat file.txt | grep "foo" | sort
+</code></pre></td></tr></table>
+<p>It basically means that it prints out the file <em>file.txt</em> line by line. The output is passed into <code>grep "foo"</code>
+that only shows the line that contains a <code>foo</code>. And that output is finally sorted by <code>sort</code>. F# has the operator
+<code>|&gt;</code> to provide such a functionality. <code>|&gt;</code> just means, pass the value on the left to the function on the right.
+So instead of</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs112', 318)" onmouseover="showTip(event, 'fs112', 318)" class="f">strToSum</span> <span class="s">&quot;1,2,3,4,5&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We also could write</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="s">&quot;1,2,3,4,5&quot;</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs112', 319)" onmouseover="showTip(event, 'fs112', 319)" class="f">strToSum</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Having this kind of Piping means we also could have written <code>strToSum</code> like this</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs114', 320)" onmouseover="showTip(event, 'fs114', 320)" class="f">strToStum</span> <span onmouseout="hideTip(event, 'fs115', 321)" onmouseover="showTip(event, 'fs115', 321)" class="i">x</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs115', 322)" onmouseover="showTip(event, 'fs115', 322)" class="i">x</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs91', 323)" onmouseover="showTip(event, 'fs91', 323)" class="f">parseInts</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs98', 324)" onmouseover="showTip(event, 'fs98', 324)" class="f">sumList</span>
+</code></pre></td>
+</tr>
+</table>
+<p>instead of</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs112', 325)" onmouseover="showTip(event, 'fs112', 325)" class="f">strToSum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs91', 326)" onmouseover="showTip(event, 'fs91', 326)" class="f">parseInts</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs98', 327)" onmouseover="showTip(event, 'fs98', 327)" class="f">sumList</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Both styles means the same. In the <code>|&gt;</code> we just provide the input argument explcitily. <code>x |&gt; parseInts |&gt; sumList</code>
+also can be read as. Take argument <code>x</code> and pass it to the <code>parseInts</code> function. The result of <code>parseInts</code> is then
+passed into the <code>sumList</code> function. This kind of style is often what you see with <code>List</code> manipulations.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs116', 328)" onmouseover="showTip(event, 'fs116', 328)" class="f">numbers</span> <span onmouseout="hideTip(event, 'fs99', 329)" onmouseover="showTip(event, 'fs99', 329)" class="i">xs</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs99', 330)" onmouseover="showTip(event, 'fs99', 330)" class="i">xs</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs96', 331)" onmouseover="showTip(event, 'fs96', 331)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs117', 332)" onmouseover="showTip(event, 'fs117', 332)" class="f">map</span>    (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs20', 333)" onmouseover="showTip(event, 'fs20', 333)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs20', 334)" onmouseover="showTip(event, 'fs20', 334)" class="i">x</span> <span class="o">+</span> <span class="n">3</span>)     <span class="c">// Add +3 to every element</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs96', 335)" onmouseover="showTip(event, 'fs96', 335)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs117', 336)" onmouseover="showTip(event, 'fs117', 336)" class="f">map</span>    (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs20', 337)" onmouseover="showTip(event, 'fs20', 337)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs20', 338)" onmouseover="showTip(event, 'fs20', 338)" class="i">x</span> <span class="o">*</span> <span class="n">2</span>)     <span class="c">// Multiply every element by 2</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs96', 339)" onmouseover="showTip(event, 'fs96', 339)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs118', 340)" onmouseover="showTip(event, 'fs118', 340)" class="f">filter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs20', 341)" onmouseover="showTip(event, 'fs20', 341)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs20', 342)" onmouseover="showTip(event, 'fs20', 342)" class="i">x</span> <span class="o">%</span> <span class="n">2</span> <span class="o">=</span> <span class="n">0</span>) <span class="c">// Only pick even elements</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs96', 343)" onmouseover="showTip(event, 'fs96', 343)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs118', 344)" onmouseover="showTip(event, 'fs118', 344)" class="f">filter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs20', 345)" onmouseover="showTip(event, 'fs20', 345)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs20', 346)" onmouseover="showTip(event, 'fs20', 346)" class="i">x</span> <span class="o">&gt;</span> <span class="n">10</span>)    <span class="c">// Only pick elements greater than 10</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs96', 347)" onmouseover="showTip(event, 'fs96', 347)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs119', 348)" onmouseover="showTip(event, 'fs119', 348)" class="f">take</span>   <span class="n">10</span>                   <span class="c">// Only take 10 Elements</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs120', 349)" onmouseover="showTip(event, 'fs120', 349)" class="i">result</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs116', 350)" onmouseover="showTip(event, 'fs116', 350)" class="f">numbers</span> [<span class="n">1..</span><span class="n">100</span>] <span class="c">// [12; 14; 16; 18; 20; 22; 24; 26; 28; 30]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>This style of composing is also what you see with LINQ in C# or Java 8 Stream interface. The above
+code could also be implemented in this way with C# LINQ feature.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">public</span> <span class="k">static</span> IEnumerable&lt;<span class="k">int</span>&gt; Numbers(IEnumerable&lt;<span class="k">int</span>&gt; xs) {
+    <span class="k">return</span> xs
+        .Select(x <span class="o">=</span><span class="o">&gt;</span> x <span class="o">+</span> <span class="n">3</span>)
+        .Select(x <span class="o">=</span><span class="o">&gt;</span> x <span class="o">*</span> <span class="n">2</span>)
+        .Where(x <span class="o">=</span><span class="o">&gt;</span> x <span class="o">%</span> <span class="n">2</span> <span class="o">=</span><span class="o">=</span> <span class="n">0</span>)
+        .Where(x <span class="o">=</span><span class="o">&gt;</span> x <span class="o">&gt;</span> <span class="n">10</span>)
+        .Take(<span class="n">10</span>);
+}
+
+<span class="k">var</span> result <span class="o">=</span> Numbers(Enumerable.Range(<span class="n">1</span>,<span class="n">100</span>));
+</code></pre></td></tr></table>
+<h2>Final Note</h2>
+<p>I covered quite a lot of topics. But I hope that now <em>functional languages</em> looks less scary to you. By understanding
+all of the topics you basically already made a big step in understanding F# in general.</p>
+
+
+<div class="tip" id="fs1">module Main</div>
+<div class="tip" id="fs2">type DateTime = System.DateTime<br /><br />Full name: Main.DateTime</div>
+<div class="tip" id="fs3">namespace System</div>
+<div class="tip" id="fs4">Multiple items<br />type DateTime =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : ticks:int64 -&gt; DateTime + 10 overloads<br />&#160;&#160;&#160;&#160;member Add : value:TimeSpan -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddDays : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddHours : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMilliseconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMinutes : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddMonths : months:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddSeconds : value:float -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddTicks : value:int64 -&gt; DateTime<br />&#160;&#160;&#160;&#160;member AddYears : value:int -&gt; DateTime<br />&#160;&#160;&#160;&#160;...<br />&#160;&#160;end<br /><br />Full name: System.DateTime<br /><br />--------------------<br />System.DateTime()<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(ticks: int64) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(ticks: int64, kind: System.DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int, calendar: System.Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, kind: System.DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, calendar: System.Globalization.Calendar) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.DateTime(year: int, month: int, day: int, hour: int, minute: int, second: int, millisecond: int, kind: System.DateTimeKind) : unit<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs5">type StringBuilder = System.Text.StringBuilder<br /><br />Full name: Main.StringBuilder</div>
+<div class="tip" id="fs6">namespace System.Text</div>
+<div class="tip" id="fs7">Multiple items<br />type StringBuilder =<br />&#160;&#160;new : unit -&gt; StringBuilder + 5 overloads<br />&#160;&#160;member Append : value:string -&gt; StringBuilder + 18 overloads<br />&#160;&#160;member AppendFormat : format:string * arg0:obj -&gt; StringBuilder + 4 overloads<br />&#160;&#160;member AppendLine : unit -&gt; StringBuilder + 1 overload<br />&#160;&#160;member Capacity : int with get, set<br />&#160;&#160;member Chars : int -&gt; char with get, set<br />&#160;&#160;member Clear : unit -&gt; StringBuilder<br />&#160;&#160;member CopyTo : sourceIndex:int * destination:char[] * destinationIndex:int * count:int -&gt; unit<br />&#160;&#160;member EnsureCapacity : capacity:int -&gt; int<br />&#160;&#160;member Equals : sb:StringBuilder -&gt; bool<br />&#160;&#160;...<br /><br />Full name: System.Text.StringBuilder<br /><br />--------------------<br />System.Text.StringBuilder() : unit<br />System.Text.StringBuilder(capacity: int) : unit<br />System.Text.StringBuilder(value: string) : unit<br />System.Text.StringBuilder(value: string, capacity: int) : unit<br />System.Text.StringBuilder(capacity: int, maxCapacity: int) : unit<br />System.Text.StringBuilder(value: string, startIndex: int, length: int, capacity: int) : unit</div>
+<div class="tip" id="fs8">Multiple items<br />type Person =<br />&#160;&#160;new : name:string -&gt; Person<br />&#160;&#160;member Name : string<br />&#160;&#160;member Name : string with set<br /><br />Full name: Main.Person<br /><br />--------------------<br />new : name:string -&gt; Person</div>
+<div class="tip" id="fs9">val name : string</div>
+<div class="tip" id="fs10">val set : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.set</div>
+<div class="tip" id="fs11">val num : int<br /><br />Full name: Main.num</div>
+<div class="tip" id="fs12">val name : string<br /><br />Full name: Main.name</div>
+<div class="tip" id="fs13">val person : Person<br /><br />Full name: Main.person</div>
+<div class="tip" id="fs14">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs15">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs16">val mutable num : int<br /><br />Full name: Main.num</div>
+<div class="tip" id="fs17">val mutable name : string<br /><br />Full name: Main.name</div>
+<div class="tip" id="fs18">val mutable person : Person<br /><br />Full name: Main.person</div>
+<div class="tip" id="fs19">val add : x:int -&gt; y:int -&gt; int<br /><br />Full name: introductioninfsharp.MyOperations.add</div>
+<div class="tip" id="fs20">val x : int</div>
+<div class="tip" id="fs21">val y : int</div>
+<div class="tip" id="fs22">module MyOperations<br /><br />from introductioninfsharp</div>
+<div class="tip" id="fs23">val result : int<br /><br />Full name: introductioninfsharp.result</div>
+<div class="tip" id="fs24">val someFunction : input:&#39;a -&gt; &#39;a0<br /><br />Full name: introductioninfsharp.someFunction</div>
+<div class="tip" id="fs25">val input : &#39;a</div>
+<div class="tip" id="fs26">val someFunction : (&#39;b -&gt; int -&gt; int)</div>
+<div class="tip" id="fs27">val input : &#39;b</div>
+<div class="tip" id="fs28">val position : int * int * int<br /><br />Full name: Main.position</div>
+<div class="tip" id="fs29">val x : int<br /><br />Full name: Main.x</div>
+<div class="tip" id="fs30">val y : int<br /><br />Full name: Main.y</div>
+<div class="tip" id="fs31">val z : int<br /><br />Full name: Main.z</div>
+<div class="tip" id="fs32">val someFunction : x:int -&gt; int * int<br /><br />Full name: Main.someFunction</div>
+<div class="tip" id="fs33">val result : int * int<br /><br />Full name: Main.result</div>
+<div class="tip" id="fs34">type Human =<br />&#160;&#160;{Id: int;<br />&#160;&#160;&#160;FirstName: string;<br />&#160;&#160;&#160;LastName: string;<br />&#160;&#160;&#160;Born: DateTime;}<br /><br />Full name: Main.Human</div>
+<div class="tip" id="fs35">Human.Id: int</div>
+<div class="tip" id="fs36">Human.FirstName: string</div>
+<div class="tip" id="fs37">Human.LastName: string</div>
+<div class="tip" id="fs38">Human.Born: DateTime</div>
+<div class="tip" id="fs39">val me : Human<br /><br />Full name: Main.me</div>
+<div class="tip" id="fs40">val age : int<br /><br />Full name: Main.age</div>
+<div class="tip" id="fs41">property System.DateTime.Today: System.DateTime</div>
+<div class="tip" id="fs42">property System.DateTime.Year: int</div>
+<div class="tip" id="fs43">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs44">val newMe : Human<br /><br />Full name: Main.newMe</div>
+<div class="tip" id="fs45">type Attributes =<br />&#160;&#160;{Strength: int;<br />&#160;&#160;&#160;Dexterity: int;<br />&#160;&#160;&#160;Intelligence: int;<br />&#160;&#160;&#160;Vitality: int;}<br /><br />Full name: Main.Attributes</div>
+<div class="tip" id="fs46">Attributes.Strength: int</div>
+<div class="tip" id="fs47">Attributes.Dexterity: int</div>
+<div class="tip" id="fs48">Attributes.Intelligence: int</div>
+<div class="tip" id="fs49">Attributes.Vitality: int</div>
+<div class="tip" id="fs50">type CaharacterSheet =<br />&#160;&#160;{Name: string;<br />&#160;&#160;&#160;Attribute: Attributes;}<br /><br />Full name: Main.CaharacterSheet</div>
+<div class="tip" id="fs51">CaharacterSheet.Name: string</div>
+<div class="tip" id="fs52">CaharacterSheet.Attribute: Attributes</div>
+<div class="tip" id="fs53">val warrior : CaharacterSheet<br /><br />Full name: Main.warrior</div>
+<div class="tip" id="fs54">type Payment =<br />&#160;&#160;| Cash<br />&#160;&#160;| PayPal of string<br />&#160;&#160;| CreditCard of string<br /><br />Full name: Main.Payment</div>
+<div class="tip" id="fs55">union case Payment.Cash: Payment</div>
+<div class="tip" id="fs56">union case Payment.PayPal: string -&gt; Payment</div>
+<div class="tip" id="fs57">union case Payment.CreditCard: string -&gt; Payment</div>
+<div class="tip" id="fs58">val inform : payment:Payment -&gt; unit<br /><br />Full name: Main.inform</div>
+<div class="tip" id="fs59">val payment : Payment</div>
+<div class="tip" id="fs60">val email : string</div>
+<div class="tip" id="fs61">val no : string</div>
+<div class="tip" id="fs62">type Markdown =<br />&#160;&#160;| NewLine<br />&#160;&#160;| Literal of string<br />&#160;&#160;| Bold of string<br />&#160;&#160;| InlineCode of string<br />&#160;&#160;| Block of Markdown list<br /><br />Full name: Main.Markdown</div>
+<div class="tip" id="fs63">union case Markdown.NewLine: Markdown</div>
+<div class="tip" id="fs64">Multiple items<br />union case Markdown.Literal: string -&gt; Markdown<br /><br />--------------------<br />type LiteralAttribute =<br />&#160;&#160;inherit Attribute<br />&#160;&#160;new : unit -&gt; LiteralAttribute<br /><br />Full name: Microsoft.FSharp.Core.LiteralAttribute<br /><br />--------------------<br />new : unit -&gt; LiteralAttribute</div>
+<div class="tip" id="fs65">union case Markdown.Bold: string -&gt; Markdown</div>
+<div class="tip" id="fs66">union case Markdown.InlineCode: string -&gt; Markdown</div>
+<div class="tip" id="fs67">union case Markdown.Block: Markdown list -&gt; Markdown</div>
+<div class="tip" id="fs68">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs69">val document : Markdown<br /><br />Full name: Main.document</div>
+<div class="tip" id="fs70">val produceHtml : markdown:Markdown -&gt; sb:StringBuilder -&gt; unit<br /><br />Full name: Main.produceHtml</div>
+<div class="tip" id="fs71">val markdown : Markdown</div>
+<div class="tip" id="fs72">val sb : StringBuilder</div>
+<div class="tip" id="fs73">System.Text.StringBuilder.Append(value: char []) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: obj) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: uint64) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: uint32) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: uint16) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: decimal) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: float) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: float32) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: int64) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em><br />System.Text.StringBuilder.Append(value: int) : System.Text.StringBuilder<br />&#160;&#160;&#160;<em>(+0 other overloads)</em></div>
+<div class="tip" id="fs74">val ignore : value:&#39;T -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Operators.ignore</div>
+<div class="tip" id="fs75">val str : string</div>
+<div class="tip" id="fs76">System.Text.StringBuilder.AppendFormat(format: string, [&lt;System.ParamArray&gt;] args: obj []) : System.Text.StringBuilder<br />System.Text.StringBuilder.AppendFormat(format: string, arg0: obj) : System.Text.StringBuilder<br />System.Text.StringBuilder.AppendFormat(provider: System.IFormatProvider, format: string, [&lt;System.ParamArray&gt;] args: obj []) : System.Text.StringBuilder<br />System.Text.StringBuilder.AppendFormat(format: string, arg0: obj, arg1: obj) : System.Text.StringBuilder<br />System.Text.StringBuilder.AppendFormat(format: string, arg0: obj, arg1: obj, arg2: obj) : System.Text.StringBuilder</div>
+<div class="tip" id="fs77">val code : string</div>
+<div class="tip" id="fs78">val markdown : Markdown list</div>
+<div class="tip" id="fs79">val x : Markdown</div>
+<div class="tip" id="fs80">val html : System.Text.StringBuilder<br /><br />Full name: Main.html</div>
+<div class="tip" id="fs81">System.Text.StringBuilder.ToString() : string<br />System.Text.StringBuilder.ToString(startIndex: int, length: int) : string</div>
+<div class="tip" id="fs82">val data : int list</div>
+<div class="tip" id="fs83">val data : (int * int * int * int) list</div>
+<div class="tip" id="fs84">val oneMore : int list</div>
+<div class="tip" id="fs85">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit</div>
+<div class="tip" id="fs86">Multiple items<br />module String<br /><br />from Microsoft.FSharp.Core<br /><br />--------------------<br />type String = System.String<br /><br />Full name: Main.String</div>
+<div class="tip" id="fs87">Multiple items<br />type String =<br />&#160;&#160;new : value:char -&gt; string + 7 overloads<br />&#160;&#160;member Chars : int -&gt; char<br />&#160;&#160;member Clone : unit -&gt; obj<br />&#160;&#160;member CompareTo : value:obj -&gt; int + 1 overload<br />&#160;&#160;member Contains : value:string -&gt; bool<br />&#160;&#160;member CopyTo : sourceIndex:int * destination:char[] * destinationIndex:int * count:int -&gt; unit<br />&#160;&#160;member EndsWith : value:string -&gt; bool + 2 overloads<br />&#160;&#160;member Equals : obj:obj -&gt; bool + 2 overloads<br />&#160;&#160;member GetEnumerator : unit -&gt; CharEnumerator<br />&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;...<br /><br />Full name: System.String<br /><br />--------------------<br />System.String(value: nativeptr&lt;char&gt;) : unit<br />System.String(value: nativeptr&lt;sbyte&gt;) : unit<br />System.String(value: char []) : unit<br />System.String(c: char, count: int) : unit<br />System.String(value: nativeptr&lt;char&gt;, startIndex: int, length: int) : unit<br />System.String(value: nativeptr&lt;sbyte&gt;, startIndex: int, length: int) : unit<br />System.String(value: char [], startIndex: int, length: int) : unit<br />System.String(value: nativeptr&lt;sbyte&gt;, startIndex: int, length: int, enc: System.Text.Encoding) : unit</div>
+<div class="tip" id="fs88">val parseInt : str:string -&gt; int<br /><br />Full name: Main.parseInt</div>
+<div class="tip" id="fs89">type Int32 =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;member CompareTo : value:obj -&gt; int + 1 overload<br />&#160;&#160;&#160;&#160;member Equals : obj:obj -&gt; bool + 1 overload<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetTypeCode : unit -&gt; TypeCode<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string + 3 overloads<br />&#160;&#160;&#160;&#160;static val MaxValue : int<br />&#160;&#160;&#160;&#160;static val MinValue : int<br />&#160;&#160;&#160;&#160;static member Parse : s:string -&gt; int + 3 overloads<br />&#160;&#160;&#160;&#160;static member TryParse : s:string * result:int -&gt; bool + 1 overload<br />&#160;&#160;end<br /><br />Full name: System.Int32</div>
+<div class="tip" id="fs90">System.Int32.Parse(s: string) : int<br />System.Int32.Parse(s: string, provider: System.IFormatProvider) : int<br />System.Int32.Parse(s: string, style: System.Globalization.NumberStyles) : int<br />System.Int32.Parse(s: string, style: System.Globalization.NumberStyles, provider: System.IFormatProvider) : int</div>
+<div class="tip" id="fs91">val parseInts : str:String -&gt; int list<br /><br />Full name: Main.parseInts</div>
+<div class="tip" id="fs92">val str : String</div>
+<div class="tip" id="fs93">System.String.Split([&lt;System.ParamArray&gt;] separator: char []) : string []<br />System.String.Split(separator: string [], options: System.StringSplitOptions) : string []<br />System.String.Split(separator: char [], options: System.StringSplitOptions) : string []<br />System.String.Split(separator: char [], count: int) : string []<br />System.String.Split(separator: string [], count: int, options: System.StringSplitOptions) : string []<br />System.String.Split(separator: char [], count: int, options: System.StringSplitOptions) : string []</div>
+<div class="tip" id="fs94">module Array<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs95">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; array:&#39;T [] -&gt; &#39;U []<br /><br />Full name: Microsoft.FSharp.Collections.Array.map</div>
+<div class="tip" id="fs96">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs97">val ofArray : array:&#39;T [] -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.ofArray</div>
+<div class="tip" id="fs98">val sumList : xs:int list -&gt; int<br /><br />Full name: Main.sumList</div>
+<div class="tip" id="fs99">val xs : int list</div>
+<div class="tip" id="fs100">val sum : list:&#39;T list -&gt; &#39;T (requires member ( + ) and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.List.sum</div>
+<div class="tip" id="fs101">val nums : int list<br /><br />Full name: Main.nums</div>
+<div class="tip" id="fs102">val sum : int<br /><br />Full name: Main.sum</div>
+<div class="tip" id="fs103">val strToSum : stringList:String -&gt; int<br /><br />Full name: Main.strToSum</div>
+<div class="tip" id="fs104">val stringList : String</div>
+<div class="tip" id="fs105">val nums : int list</div>
+<div class="tip" id="fs106">val sum : int</div>
+<div class="tip" id="fs107">val compose : f:(&#39;a -&gt; &#39;b) -&gt; g:(&#39;b -&gt; &#39;c) -&gt; x:&#39;a -&gt; &#39;c<br /><br />Full name: Main.compose</div>
+<div class="tip" id="fs108">val f : (&#39;a -&gt; &#39;b)</div>
+<div class="tip" id="fs109">val g : (&#39;b -&gt; &#39;c)</div>
+<div class="tip" id="fs110">val x : &#39;a</div>
+<div class="tip" id="fs111">val z : &#39;a</div>
+<div class="tip" id="fs112">val strToSum : (String -&gt; int)<br /><br />Full name: Main.strToSum</div>
+<div class="tip" id="fs113">val result : int<br /><br />Full name: Main.result</div>
+<div class="tip" id="fs114">val strToStum : x:String -&gt; int<br /><br />Full name: Main.strToStum</div>
+<div class="tip" id="fs115">val x : String</div>
+<div class="tip" id="fs116">val numbers : xs:int list -&gt; int list<br /><br />Full name: Main.numbers</div>
+<div class="tip" id="fs117">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; list:&#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.map</div>
+<div class="tip" id="fs118">val filter : predicate:(&#39;T -&gt; bool) -&gt; list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.filter</div>
+<div class="tip" id="fs119">val take : count:int -&gt; list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.take</div>
+<div class="tip" id="fs120">val result : int list<br /><br />Full name: Main.result</div>

@@ -1,0 +1,364 @@
+---
+layout: post
+title: Applying Structured Programming
+date: 2016-03-09 01:00:00
+---
+
+<p>In my previous post about <a href="{% post_url 2016-03-09-structured-programming %}">Structured Programming</a> I
+talked about that basic looping constructs, <code>fold</code> and so on are basically just still to powerful.
+In the sense of readability we should try to eliminate them with more specific ones. In this post
+i go through a <em>toy example</em> to show the various ways on how to refactor some code.</p>
+<h2>The Toy Example</h2>
+<p>Recently I had some conversation about code in a game and providing some kind of
+<em>critical hit-chance</em> in a game. The typical way on how to achieve that is actually easy. Let's
+assume that every attack of an player has a 16% chance to be critical. We only need to generate
+a random number between 0 and 99 (or 0 to 1) and test if that number is lower than 16 (or 0.16).</p>
+<p>Let's assume we want to test if that really is true. We would just generate some random numbers.
+Test if that number is a critical hit. And either increase a <em>critical hit</em> variable or some
+<em>normal hit</em> variable. After 1000 tries we just calculate the average and see if
+we really have around 16% or around 160 hits.</p>
+<h2>Solution 1</h2>
+<p>Some very imperative code in F# could look like this.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">rng</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="t">Random</span>()
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="i">chance</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs7', 7)" onmouseover="showTip(event, 'fs7', 7)" class="v">criticalHit</span> <span class="o">=</span> <span class="n">0</span>
+    <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs8', 8)" onmouseover="showTip(event, 'fs8', 8)" class="v">normalHit</span>   <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> <span onmouseout="hideTip(event, 'fs9', 9)" onmouseover="showTip(event, 'fs9', 9)" class="i">i</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span class="n">1000</span> <span class="k">do</span>
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 10)" onmouseover="showTip(event, 'fs10', 10)" class="i">random</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 11)" onmouseover="showTip(event, 'fs2', 11)" class="i">rng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 12)" onmouseover="showTip(event, 'fs11', 12)" class="f">Next</span>(<span class="n">0</span>, <span class="n">100</span>)
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs10', 13)" onmouseover="showTip(event, 'fs10', 13)" class="i">random</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 14)" onmouseover="showTip(event, 'fs6', 14)" class="i">chance</span> <span class="k">then</span>
+            <span onmouseout="hideTip(event, 'fs7', 15)" onmouseover="showTip(event, 'fs7', 15)" class="v">criticalHit</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs7', 16)" onmouseover="showTip(event, 'fs7', 16)" class="v">criticalHit</span> <span class="o">+</span> <span class="n">1</span>
+        <span class="k">else</span>
+            <span onmouseout="hideTip(event, 'fs8', 17)" onmouseover="showTip(event, 'fs8', 17)" class="v">normalHit</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs8', 18)" onmouseover="showTip(event, 'fs8', 18)" class="v">normalHit</span> <span class="o">+</span> <span class="n">1</span>
+    <span onmouseout="hideTip(event, 'fs7', 19)" onmouseover="showTip(event, 'fs7', 19)" class="v">criticalHit</span>, <span onmouseout="hideTip(event, 'fs8', 20)" onmouseover="showTip(event, 'fs8', 20)" class="v">normalHit</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Testing our code would look something like this.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 21)" onmouseover="showTip(event, 'fs12', 21)" class="f">percentage</span> <span onmouseout="hideTip(event, 'fs13', 22)" onmouseover="showTip(event, 'fs13', 22)" class="i">x</span> <span onmouseout="hideTip(event, 'fs14', 23)" onmouseover="showTip(event, 'fs14', 23)" class="i">y</span> <span class="o">=</span> <span class="n">100.0</span> <span class="o">/</span> (<span onmouseout="hideTip(event, 'fs13', 24)" onmouseover="showTip(event, 'fs13', 24)" class="i">x</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs14', 25)" onmouseover="showTip(event, 'fs14', 25)" class="i">y</span>) <span class="o">*</span> <span onmouseout="hideTip(event, 'fs13', 26)" onmouseover="showTip(event, 'fs13', 26)" class="i">x</span>
+
+<span class="k">for</span> <span onmouseout="hideTip(event, 'fs9', 27)" onmouseover="showTip(event, 'fs9', 27)" class="i">i</span> <span class="k">in</span> <span class="n">1..</span><span class="n">10</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 28)" onmouseover="showTip(event, 'fs15', 28)" class="i">crit</span>,<span onmouseout="hideTip(event, 'fs16', 29)" onmouseover="showTip(event, 'fs16', 29)" class="i">normal</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 30)" onmouseover="showTip(event, 'fs5', 30)" class="f">calculateChance</span> <span class="n">16</span>
+    <span onmouseout="hideTip(event, 'fs17', 31)" onmouseover="showTip(event, 'fs17', 31)" class="f">printfn</span> <span class="s">&quot;Crit: </span><span class="pf">%d</span><span class="s"> Normal: </span><span class="pf">%d</span><span class="s"> Percentage: </span><span class="pf">%f</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs15', 32)" onmouseover="showTip(event, 'fs15', 32)" class="i">crit</span> <span onmouseout="hideTip(event, 'fs16', 33)" onmouseover="showTip(event, 'fs16', 33)" class="i">normal</span> (<span onmouseout="hideTip(event, 'fs12', 34)" onmouseover="showTip(event, 'fs12', 34)" class="f">percentage</span> (<span onmouseout="hideTip(event, 'fs18', 35)" onmouseover="showTip(event, 'fs18', 35)" class="f">float</span> <span onmouseout="hideTip(event, 'fs15', 36)" onmouseover="showTip(event, 'fs15', 36)" class="i">crit</span>) (<span onmouseout="hideTip(event, 'fs18', 37)" onmouseover="showTip(event, 'fs18', 37)" class="f">float</span> <span onmouseout="hideTip(event, 'fs16', 38)" onmouseover="showTip(event, 'fs16', 38)" class="i">normal</span>))
+</code></pre></td>
+</tr>
+</table>
+<p>We now getting a result like this:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="console">Crit: 1585 Normal: 8415 Percentage: 15.850000
+Crit: 1638 Normal: 8362 Percentage: 16.380000
+Crit: 1616 Normal: 8384 Percentage: 16.160000
+Crit: 1603 Normal: 8397 Percentage: 16.030000
+Crit: 1624 Normal: 8376 Percentage: 16.240000
+Crit: 1667 Normal: 8333 Percentage: 16.670000
+Crit: 1617 Normal: 8383 Percentage: 16.170000
+Crit: 1639 Normal: 8361 Percentage: 16.390000
+Crit: 1653 Normal: 8347 Percentage: 16.530000
+Crit: 1613 Normal: 8387 Percentage: 16.130000
+</code></pre></td></tr></table>
+<p>Actually we now have proven that the idea works, as around 16% of our attacks are now critical.
+But now let's actually look if we can improve our <code>calculateChance</code> function. As stated in the
+beginning. It is a toy example, so we usually wouldn't waste any time in improving this particular
+function. But by going through a toy example it can help to get the general concept on
+how to improve code.</p>
+<h2>Solution 2</h2>
+<p>In functional programming mutable variables are actually a little bit frowned upon. So let's try
+to eliminate our mutable variables by replacing our loop with recursion. Actually recursion is in that
+sense just looping and you can turn any kind of loop into recursion. The difference between looping
+and recursion is just what is explicit and what is implicit.</p>
+<p>In Looping we implicitly move to the next step, and we can explicitly break/abort a loop. In recursion
+we implicitly abort, and we have to explicitly move to the next step, by calling our function recursively.</p>
+<p>Mutable variables outside of a loop turn into function parameters. This way we can turn any kind of
+loop into a recursive function and eliminate mutable variables all together.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs5', 39)" onmouseover="showTip(event, 'fs5', 39)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 40)" onmouseover="showTip(event, 'fs6', 40)" class="i">chance</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs19', 41)" onmouseover="showTip(event, 'fs19', 41)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs20', 42)" onmouseover="showTip(event, 'fs20', 42)" class="i">count</span> <span onmouseout="hideTip(event, 'fs21', 43)" onmouseover="showTip(event, 'fs21', 43)" class="i">criticalHit</span> <span onmouseout="hideTip(event, 'fs22', 44)" onmouseover="showTip(event, 'fs22', 44)" class="i">normalHit</span> <span class="o">=</span>
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs20', 45)" onmouseover="showTip(event, 'fs20', 45)" class="i">count</span> <span class="o">&lt;</span> <span class="n">1000</span> <span class="k">then</span>
+            <span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 46)" onmouseover="showTip(event, 'fs10', 46)" class="i">random</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 47)" onmouseover="showTip(event, 'fs2', 47)" class="i">rng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 48)" onmouseover="showTip(event, 'fs11', 48)" class="f">Next</span>(<span class="n">0</span>,<span class="n">100</span>)
+            <span class="k">match</span> <span onmouseout="hideTip(event, 'fs10', 49)" onmouseover="showTip(event, 'fs10', 49)" class="i">random</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 50)" onmouseover="showTip(event, 'fs6', 50)" class="i">chance</span>  <span class="k">with</span>
+            | <span class="k">false</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs19', 51)" onmouseover="showTip(event, 'fs19', 51)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs20', 52)" onmouseover="showTip(event, 'fs20', 52)" class="i">count</span><span class="o">+</span><span class="n">1</span>) <span onmouseout="hideTip(event, 'fs21', 53)" onmouseover="showTip(event, 'fs21', 53)" class="i">criticalHit</span> (<span onmouseout="hideTip(event, 'fs22', 54)" onmouseover="showTip(event, 'fs22', 54)" class="i">normalHit</span><span class="o">+</span><span class="n">1</span>)
+            | <span class="k">true</span>  <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs19', 55)" onmouseover="showTip(event, 'fs19', 55)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs20', 56)" onmouseover="showTip(event, 'fs20', 56)" class="i">count</span><span class="o">+</span><span class="n">1</span>) (<span onmouseout="hideTip(event, 'fs21', 57)" onmouseover="showTip(event, 'fs21', 57)" class="i">criticalHit</span><span class="o">+</span><span class="n">1</span>) <span onmouseout="hideTip(event, 'fs22', 58)" onmouseover="showTip(event, 'fs22', 58)" class="i">normalHit</span>
+        <span class="k">else</span>
+            <span onmouseout="hideTip(event, 'fs21', 59)" onmouseover="showTip(event, 'fs21', 59)" class="i">criticalHit</span>, <span onmouseout="hideTip(event, 'fs22', 60)" onmouseover="showTip(event, 'fs22', 60)" class="i">normalHit</span>
+    <span onmouseout="hideTip(event, 'fs19', 61)" onmouseover="showTip(event, 'fs19', 61)" class="f">loop</span> <span class="n">0</span> <span class="n">0</span> <span class="n">0</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We now eliminated all mutable variables and now provided an inner recursive function that replaces
+our loop. On top of it i replaced the inner <code>if</code> check on <code>random &lt; chance</code> with pattern-matching.
+This way it is easier to see the difference.</p>
+<p>Either in both ways we will call <code>loop</code> again, but with an increment <code>count</code>. If <code>random &lt; change</code>
+is <code>false</code> we have a normal hit, so we increase <code>normalHit</code> by one, otherwise we increase <code>criticalHit</code>
+by one.</p>
+<p>We continue our recursive call as long we have <code>count &lt; 1000</code>. But as soon that condition is <code>false</code>
+we end up with just <code>criticalHit, normalHit</code> that will return both variables as a tuple.</p>
+<p>The question overall is. Is that version better as <em>Solution 1</em>?</p>
+<p>Well it depends. We eliminated the mutable variables, but actually at least I am someone that
+has nothing against mutable variables in a limited scope. If you are a programmer that primarily
+uses an imperative language and are used to looping then you will probably prefer Solution 1. If you
+are in the state of learning <em>functional programing</em> you should try to replace looping
+constructs in this kind of way to get used to it. This is especially important for the later Solutions
+we will look at. If you are used to this, like me, you will probably not find the recursive version
+any harder to understand as the looping example.</p>
+<p>So what is with Structured Programming? Did we replace a powerful construct with a less powerful
+construct? At that moment, no we didn't. Recursion is just as much powerful as looping. The funny
+part. The compiler will turn such kind of tail-recursion into a loop when compiled. That's also
+the reason why functional programmers names such inner recursive functions just <code>loop</code>.</p>
+<p>So was our transformation into <em>Solution 2</em> wasteful? Not really, that now leads to <em>Solution 3</em></p>
+<h2>Solution 3</h2>
+<p>Once we have eliminated all kinds of mutable variables we end up with a recursive function that
+just loops. Our function takes some additional variables like <code>count</code>, <code>criticalHit</code> and <code>normalHit</code>
+as it's state. What we really have is a looping construct with just an accumulator. But wait. That's
+exactly what <code>fold</code> is about! The question that starts to beg is. Can we replace <em>Solution 2</em> somehow
+by using a <code>fold</code>?</p>
+<p>The answer is <em>yes</em>. But which kind of <code>fold</code> do we need? Or in other words, over what exactly do
+we loop? We don't loop over a data-structure like an <code>Array</code> or <code>List</code>. So what is it that
+we are looping over?</p>
+<p>When we examine our code we could say we loop over <code>count</code>. But that isn't true. Our
+<code>count</code> is just there so we know when to end the looping. We really are looping over the
+<code>rng.Next(0,100)</code> call. We only need the <code>count</code> because that is an infinite sequence.
+But that actually answers our question. Let's create a <code>seq</code> that just returns an
+infinite sequence of random numbers.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 62)" onmouseover="showTip(event, 'fs2', 62)" class="i">rng</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs3', 63)" onmouseover="showTip(event, 'fs3', 63)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 64)" onmouseover="showTip(event, 'fs4', 64)" class="t">Random</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 65)" onmouseover="showTip(event, 'fs23', 65)" class="f">randomSeq</span> <span onmouseout="hideTip(event, 'fs24', 66)" onmouseover="showTip(event, 'fs24', 66)" class="i">min</span> <span onmouseout="hideTip(event, 'fs25', 67)" onmouseover="showTip(event, 'fs25', 67)" class="i">max</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs26', 68)" onmouseover="showTip(event, 'fs26', 68)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 69)" onmouseover="showTip(event, 'fs27', 69)" class="f">initInfinite</span> (<span class="k">fun</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs2', 70)" onmouseover="showTip(event, 'fs2', 70)" class="i">rng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 71)" onmouseover="showTip(event, 'fs11', 71)" class="f">Next</span>(<span onmouseout="hideTip(event, 'fs24', 72)" onmouseover="showTip(event, 'fs24', 72)" class="i">min</span>, <span onmouseout="hideTip(event, 'fs25', 73)" onmouseover="showTip(event, 'fs25', 73)" class="i">max</span>))
+</code></pre></td>
+</tr>
+</table>
+<p>Note that I'm defining <code>rng</code> outside the function. Instantiating a <code>System.Random</code> inside the function
+and calling <code>randomSeq</code> in short time-interval would otherwise lead to a RNG with the same seed.
+Once we have our Random Sequence it also becomes clearer what our <code>count</code> was before. We just <code>take</code>
+the amount of randoms we need from our infinite sequence. After that, we only need to transform what is
+left into a <code>fold</code> call.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs5', 74)" onmouseover="showTip(event, 'fs5', 74)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 75)" onmouseover="showTip(event, 'fs6', 75)" class="i">chance</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs23', 76)" onmouseover="showTip(event, 'fs23', 76)" class="f">randomSeq</span> <span class="n">0</span> <span class="n">100</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 77)" onmouseover="showTip(event, 'fs26', 77)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 78)" onmouseover="showTip(event, 'fs28', 78)" class="f">take</span> <span class="n">1000</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 79)" onmouseover="showTip(event, 'fs26', 79)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs29', 80)" onmouseover="showTip(event, 'fs29', 80)" class="f">fold</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs21', 81)" onmouseover="showTip(event, 'fs21', 81)" class="i">criticalHit</span>,<span onmouseout="hideTip(event, 'fs22', 82)" onmouseover="showTip(event, 'fs22', 82)" class="i">normalHit</span>) <span onmouseout="hideTip(event, 'fs10', 83)" onmouseover="showTip(event, 'fs10', 83)" class="i">random</span> <span class="k">-&gt;</span>
+        <span class="k">if</span>   <span onmouseout="hideTip(event, 'fs10', 84)" onmouseover="showTip(event, 'fs10', 84)" class="i">random</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 85)" onmouseover="showTip(event, 'fs6', 85)" class="i">chance</span> 
+        <span class="k">then</span> (<span onmouseout="hideTip(event, 'fs21', 86)" onmouseover="showTip(event, 'fs21', 86)" class="i">criticalHit</span><span class="o">+</span><span class="n">1</span>),<span onmouseout="hideTip(event, 'fs22', 87)" onmouseover="showTip(event, 'fs22', 87)" class="i">normalHit</span>
+        <span class="k">else</span> <span onmouseout="hideTip(event, 'fs21', 88)" onmouseover="showTip(event, 'fs21', 88)" class="i">criticalHit</span>,(<span onmouseout="hideTip(event, 'fs22', 89)" onmouseover="showTip(event, 'fs22', 89)" class="i">normalHit</span><span class="o">+</span><span class="n">1</span>)
+    ) (<span class="n">0</span>,<span class="n">0</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>Looking at the current Solution i think we made our first improvements to our code. At first we
+created a <code>randomSeq</code>. A sequence out of random can be helpful in many other places. <code>Seq.take 1000</code>
+makes it clear that we just fetch <code>1000</code> random numbers from it. And after having those we use <code>fold</code>.</p>
+<p>Now, our <code>fold</code> only contains the real logic. It just checks whether our random is a criticalHit or not
+and we create our new state from it.</p>
+<p>But as stated before. <code>fold</code> is still something that we consider as <em>powerful</em>, is there a way to also
+eliminate <code>fold</code>?</p>
+<h2>Solution 4</h2>
+<p>We actually can eliminate <code>fold</code>. But for that we need to go and look back at what we are actually
+doing. What we really was interested in was the percentage if we really get the right amount of
+<em>critical-hits</em> this way. What we really need is to split it into two parts. We need some function
+that test whether we have a critical hit or not. We could turn it into <code>true</code> and <code>false</code> values.
+But later we need to turn those somehow into a formula to calculate the average.</p>
+<p>But by thinking separetely about it we easily can recognise that we can easily achive both things in
+one step. By just turning a critical-hit into <code>1.0</code> and a normal hit into <code>0.0</code>. By calculating the
+average we would automatically get a percentage that ranges bewteen <code>0.0</code> and <code>1.0</code>. We could multiply it by
+<code>100.0</code> or we also could use <code>100.0</code> and <code>0.0</code> instead of <code>1.0</code> and <code>0.0</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 90)" onmouseover="showTip(event, 'fs30', 90)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 91)" onmouseover="showTip(event, 'fs6', 91)" class="i">chance</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs23', 92)" onmouseover="showTip(event, 'fs23', 92)" class="f">randomSeq</span> <span class="n">0</span> <span class="n">100</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 93)" onmouseover="showTip(event, 'fs26', 93)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 94)" onmouseover="showTip(event, 'fs28', 94)" class="f">take</span> <span class="n">1000</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 95)" onmouseover="showTip(event, 'fs26', 95)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 96)" onmouseover="showTip(event, 'fs31', 96)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs32', 97)" onmouseover="showTip(event, 'fs32', 97)" class="i">x</span> <span class="k">-&gt;</span> <span class="k">if</span> <span onmouseout="hideTip(event, 'fs32', 98)" onmouseover="showTip(event, 'fs32', 98)" class="i">x</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 99)" onmouseover="showTip(event, 'fs6', 99)" class="i">chance</span> <span class="k">then</span> <span class="n">100.0</span> <span class="k">else</span> <span class="n">0.0</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 100)" onmouseover="showTip(event, 'fs26', 100)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs33', 101)" onmouseover="showTip(event, 'fs33', 101)" class="f">average</span>
+</code></pre></td>
+</tr>
+</table>
+<p>And as a final note. We can replace a call to <code>map</code> followed by <code>average</code> with <code>averageBy</code></p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 102)" onmouseover="showTip(event, 'fs30', 102)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 103)" onmouseover="showTip(event, 'fs6', 103)" class="i">chance</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs23', 104)" onmouseover="showTip(event, 'fs23', 104)" class="f">randomSeq</span> <span class="n">0</span> <span class="n">100</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 105)" onmouseover="showTip(event, 'fs26', 105)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 106)" onmouseover="showTip(event, 'fs28', 106)" class="f">take</span> <span class="n">1000</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 107)" onmouseover="showTip(event, 'fs26', 107)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 108)" onmouseover="showTip(event, 'fs34', 108)" class="f">averageBy</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs32', 109)" onmouseover="showTip(event, 'fs32', 109)" class="i">x</span> <span class="k">-&gt;</span> <span class="k">if</span> <span onmouseout="hideTip(event, 'fs32', 110)" onmouseover="showTip(event, 'fs32', 110)" class="i">x</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 111)" onmouseover="showTip(event, 'fs6', 111)" class="i">chance</span> <span class="k">then</span> <span class="n">100.0</span> <span class="k">else</span> <span class="n">0.0</span>)
+</code></pre></td>
+</tr>
+</table>
+<h2>Conclusion</h2>
+<p>When we compare the final code with what we started I think we have reached a good refactoring.</p>
+<p>We started with:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 112)" onmouseover="showTip(event, 'fs2', 112)" class="i">rng</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs3', 113)" onmouseover="showTip(event, 'fs3', 113)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 114)" onmouseover="showTip(event, 'fs4', 114)" class="t">Random</span>()
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs5', 115)" onmouseover="showTip(event, 'fs5', 115)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 116)" onmouseover="showTip(event, 'fs6', 116)" class="i">chance</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs7', 117)" onmouseover="showTip(event, 'fs7', 117)" class="v">criticalHit</span> <span class="o">=</span> <span class="n">0</span>
+    <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs8', 118)" onmouseover="showTip(event, 'fs8', 118)" class="v">normalHit</span>   <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> <span onmouseout="hideTip(event, 'fs9', 119)" onmouseover="showTip(event, 'fs9', 119)" class="i">i</span> <span class="k">in</span> <span class="n">1</span> <span class="o">..</span> <span class="n">1000</span> <span class="k">do</span>
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 120)" onmouseover="showTip(event, 'fs10', 120)" class="i">random</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 121)" onmouseover="showTip(event, 'fs2', 121)" class="i">rng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 122)" onmouseover="showTip(event, 'fs11', 122)" class="f">Next</span>(<span class="n">0</span>, <span class="n">100</span>)
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs10', 123)" onmouseover="showTip(event, 'fs10', 123)" class="i">random</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 124)" onmouseover="showTip(event, 'fs6', 124)" class="i">chance</span> <span class="k">then</span>
+            <span onmouseout="hideTip(event, 'fs7', 125)" onmouseover="showTip(event, 'fs7', 125)" class="v">criticalHit</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs7', 126)" onmouseover="showTip(event, 'fs7', 126)" class="v">criticalHit</span> <span class="o">+</span> <span class="n">1</span>
+        <span class="k">else</span>
+            <span onmouseout="hideTip(event, 'fs8', 127)" onmouseover="showTip(event, 'fs8', 127)" class="v">normalHit</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs8', 128)" onmouseover="showTip(event, 'fs8', 128)" class="v">normalHit</span> <span class="o">+</span> <span class="n">1</span>
+    <span onmouseout="hideTip(event, 'fs7', 129)" onmouseover="showTip(event, 'fs7', 129)" class="v">criticalHit</span>, <span onmouseout="hideTip(event, 'fs8', 130)" onmouseover="showTip(event, 'fs8', 130)" class="v">normalHit</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 131)" onmouseover="showTip(event, 'fs12', 131)" class="f">percentage</span> <span onmouseout="hideTip(event, 'fs13', 132)" onmouseover="showTip(event, 'fs13', 132)" class="i">x</span> <span onmouseout="hideTip(event, 'fs14', 133)" onmouseover="showTip(event, 'fs14', 133)" class="i">y</span> <span class="o">=</span> <span class="n">100.0</span> <span class="o">/</span> (<span onmouseout="hideTip(event, 'fs13', 134)" onmouseover="showTip(event, 'fs13', 134)" class="i">x</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs14', 135)" onmouseover="showTip(event, 'fs14', 135)" class="i">y</span>) <span class="o">*</span> <span onmouseout="hideTip(event, 'fs13', 136)" onmouseover="showTip(event, 'fs13', 136)" class="i">x</span>
+
+<span class="k">for</span> <span onmouseout="hideTip(event, 'fs9', 137)" onmouseover="showTip(event, 'fs9', 137)" class="i">i</span> <span class="k">in</span> <span class="n">1..</span><span class="n">10</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 138)" onmouseover="showTip(event, 'fs15', 138)" class="i">crit</span>,<span onmouseout="hideTip(event, 'fs16', 139)" onmouseover="showTip(event, 'fs16', 139)" class="i">normal</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 140)" onmouseover="showTip(event, 'fs5', 140)" class="f">calculateChance</span> <span class="n">16</span>
+    <span onmouseout="hideTip(event, 'fs17', 141)" onmouseover="showTip(event, 'fs17', 141)" class="f">printfn</span> <span class="s">&quot;Crit: </span><span class="pf">%d</span><span class="s"> Normal: </span><span class="pf">%d</span><span class="s"> Percentage: </span><span class="pf">%f</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs15', 142)" onmouseover="showTip(event, 'fs15', 142)" class="i">crit</span> <span onmouseout="hideTip(event, 'fs16', 143)" onmouseover="showTip(event, 'fs16', 143)" class="i">normal</span> (<span onmouseout="hideTip(event, 'fs12', 144)" onmouseover="showTip(event, 'fs12', 144)" class="f">percentage</span> (<span onmouseout="hideTip(event, 'fs18', 145)" onmouseover="showTip(event, 'fs18', 145)" class="f">float</span> <span onmouseout="hideTip(event, 'fs15', 146)" onmouseover="showTip(event, 'fs15', 146)" class="i">crit</span>) (<span onmouseout="hideTip(event, 'fs18', 147)" onmouseover="showTip(event, 'fs18', 147)" class="f">float</span> <span onmouseout="hideTip(event, 'fs16', 148)" onmouseover="showTip(event, 'fs16', 148)" class="i">normal</span>))
+</code></pre></td>
+</tr>
+</table>
+<p>End we ended with</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 149)" onmouseover="showTip(event, 'fs2', 149)" class="i">rng</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs3', 150)" onmouseover="showTip(event, 'fs3', 150)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 151)" onmouseover="showTip(event, 'fs4', 151)" class="t">Random</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs23', 152)" onmouseover="showTip(event, 'fs23', 152)" class="f">randomSeq</span> <span onmouseout="hideTip(event, 'fs24', 153)" onmouseover="showTip(event, 'fs24', 153)" class="i">min</span> <span onmouseout="hideTip(event, 'fs25', 154)" onmouseover="showTip(event, 'fs25', 154)" class="i">max</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs26', 155)" onmouseover="showTip(event, 'fs26', 155)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 156)" onmouseover="showTip(event, 'fs27', 156)" class="f">initInfinite</span> (<span class="k">fun</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs2', 157)" onmouseover="showTip(event, 'fs2', 157)" class="i">rng</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 158)" onmouseover="showTip(event, 'fs11', 158)" class="f">Next</span>(<span onmouseout="hideTip(event, 'fs24', 159)" onmouseover="showTip(event, 'fs24', 159)" class="i">min</span>, <span onmouseout="hideTip(event, 'fs25', 160)" onmouseover="showTip(event, 'fs25', 160)" class="i">max</span>))
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs30', 161)" onmouseover="showTip(event, 'fs30', 161)" class="f">calculateChance</span> <span onmouseout="hideTip(event, 'fs6', 162)" onmouseover="showTip(event, 'fs6', 162)" class="i">chance</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs23', 163)" onmouseover="showTip(event, 'fs23', 163)" class="f">randomSeq</span> <span class="n">0</span> <span class="n">100</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 164)" onmouseover="showTip(event, 'fs26', 164)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs28', 165)" onmouseover="showTip(event, 'fs28', 165)" class="f">take</span> <span class="n">1000</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 166)" onmouseover="showTip(event, 'fs26', 166)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 167)" onmouseover="showTip(event, 'fs34', 167)" class="f">averageBy</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs32', 168)" onmouseover="showTip(event, 'fs32', 168)" class="i">x</span> <span class="k">-&gt;</span> <span class="k">if</span> <span onmouseout="hideTip(event, 'fs32', 169)" onmouseover="showTip(event, 'fs32', 169)" class="i">x</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs6', 170)" onmouseover="showTip(event, 'fs6', 170)" class="i">chance</span> <span class="k">then</span> <span class="n">100.0</span> <span class="k">else</span> <span class="n">0.0</span>)
+
+<span class="k">for</span> <span onmouseout="hideTip(event, 'fs9', 171)" onmouseover="showTip(event, 'fs9', 171)" class="i">i</span> <span class="k">in</span> <span class="n">1..</span><span class="n">10</span> <span class="k">do</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs35', 172)" onmouseover="showTip(event, 'fs35', 172)" class="i">percentage</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs30', 173)" onmouseover="showTip(event, 'fs30', 173)" class="f">calculateChance</span> <span class="n">16</span>
+    <span onmouseout="hideTip(event, 'fs17', 174)" onmouseover="showTip(event, 'fs17', 174)" class="f">printfn</span> <span class="s">&quot;Percentage: </span><span class="pf">%f</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs35', 175)" onmouseover="showTip(event, 'fs35', 175)" class="i">percentage</span>
+</code></pre></td>
+</tr>
+</table>
+<p>From a code perspective we didn't write more code. We even reduced the line count number.
+By rewriting we created a reusable <code>randomSeq</code> sequence that can provide
+us an infinite stream of random numbers. I also find the logic easier to understand.</p>
+<ol>
+<li>Initialize a <code>randomSeq</code> that return numbers from 0 to 99</li>
+<li>Take 1000 of those numbers</li>
+<li>Map them to <code>100.0</code> if it smaller than <code>chance</code> or <code>0.0</code> and calculate the average from those numbers.</li>
+</ol>
+<p>As stated in the beginning. It was a toy program with what we started but overall we can see the ways
+in how we can continuously improve our code.</p>
+<p>I don't think that just turning a loop in itself into
+a recursive function as you see in <em>Solution 2</em> provides much benefit. But doing such a thing
+can help to later turn it into a <code>fold</code> call. You also can move directly from <em>Solution 1</em> to
+<em>Solution 3</em>. But doing the intermediate Step can greatly help if you are not used in doing this kind
+of things.</p>
+<p>Once you have a <code>fold</code> in it you can further think in how you can eliminate it. If there
+exists other functions that can replace a <code>fold</code> use them instead! But what happens if you don't
+find other more specific function as <code>fold</code>? Well just use it, it is there to be used. But if you
+found similarities between multiple different lambda functions that you pass into <code>fold</code>, you should
+look into how you can abstract the lambda into a reusable function.</p>
+
+
+<div class="tip" id="fs1">module Main</div>
+<div class="tip" id="fs2">val rng : System.Random<br /><br />Full name: Main.rng</div>
+<div class="tip" id="fs3">namespace System</div>
+<div class="tip" id="fs4">Multiple items<br />type Random =<br />&#160;&#160;new : unit -&gt; Random + 1 overload<br />&#160;&#160;member Next : unit -&gt; int + 2 overloads<br />&#160;&#160;member NextBytes : buffer:byte[] -&gt; unit<br />&#160;&#160;member NextDouble : unit -&gt; float<br /><br />Full name: System.Random<br /><br />--------------------<br />System.Random() : unit<br />System.Random(Seed: int) : unit</div>
+<div class="tip" id="fs5">val calculateChance : chance:int -&gt; int * int<br /><br />Full name: Main.calculateChance</div>
+<div class="tip" id="fs6">val chance : int</div>
+<div class="tip" id="fs7">val mutable criticalHit : int</div>
+<div class="tip" id="fs8">val mutable normalHit : int</div>
+<div class="tip" id="fs9">val i : int32</div>
+<div class="tip" id="fs10">val random : int</div>
+<div class="tip" id="fs11">System.Random.Next() : int<br />System.Random.Next(maxValue: int) : int<br />System.Random.Next(minValue: int, maxValue: int) : int</div>
+<div class="tip" id="fs12">val percentage : x:float -&gt; y:float -&gt; float<br /><br />Full name: Main.percentage</div>
+<div class="tip" id="fs13">val x : float</div>
+<div class="tip" id="fs14">val y : float</div>
+<div class="tip" id="fs15">val crit : int</div>
+<div class="tip" id="fs16">val normal : int</div>
+<div class="tip" id="fs17">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs18">Multiple items<br />val float : value:&#39;T -&gt; float (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.float<br /><br />--------------------<br />type float = System.Double<br /><br />Full name: Microsoft.FSharp.Core.float<br /><br />--------------------<br />type float&lt;&#39;Measure&gt; = float<br /><br />Full name: Microsoft.FSharp.Core.float&lt;_&gt;</div>
+<div class="tip" id="fs19">val loop : (int -&gt; int -&gt; int -&gt; int * int)</div>
+<div class="tip" id="fs20">val count : int</div>
+<div class="tip" id="fs21">val criticalHit : int</div>
+<div class="tip" id="fs22">val normalHit : int</div>
+<div class="tip" id="fs23">val randomSeq : min:int -&gt; max:int -&gt; seq&lt;int&gt;<br /><br />Full name: Main.randomSeq</div>
+<div class="tip" id="fs24">val min : int</div>
+<div class="tip" id="fs25">val max : int</div>
+<div class="tip" id="fs26">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs27">val initInfinite : initializer:(int -&gt; &#39;T) -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.initInfinite</div>
+<div class="tip" id="fs28">val take : count:int -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.take</div>
+<div class="tip" id="fs29">val fold : folder:(&#39;State -&gt; &#39;T -&gt; &#39;State) -&gt; state:&#39;State -&gt; source:seq&lt;&#39;T&gt; -&gt; &#39;State<br /><br />Full name: Microsoft.FSharp.Collections.Seq.fold</div>
+<div class="tip" id="fs30">val calculateChance : chance:int -&gt; float<br /><br />Full name: Main.calculateChance</div>
+<div class="tip" id="fs31">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.map</div>
+<div class="tip" id="fs32">val x : int</div>
+<div class="tip" id="fs33">val average : source:seq&lt;&#39;T&gt; -&gt; &#39;T (requires member ( + ) and member DivideByInt and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.Seq.average</div>
+<div class="tip" id="fs34">val averageBy : projection:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; &#39;U (requires member ( + ) and member DivideByInt and member get_Zero)<br /><br />Full name: Microsoft.FSharp.Collections.Seq.averageBy</div>
+<div class="tip" id="fs35">val percentage : float</div>

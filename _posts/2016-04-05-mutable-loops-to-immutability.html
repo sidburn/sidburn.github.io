@@ -1,0 +1,799 @@
+---
+layout: post
+title: "From mutable loops to immutable folds"
+---
+
+<p>When we ask of <em>key-features</em> of functional programming, you will probably hear two things most often.
+Immutability and recursion. But why is that so? As Immutability also becomes more important in OO
+languages you will probably find a lot of reason for that one, but why are recursive
+functions so important? The short answer is, because of Immutability! To understand the connection
+between those, let's start with some code that uses loops with mutation.</p>
+<h2>ResizeArray</h2>
+<p>Let's start with <code>ResizeArray</code>, and let's implement a <code>map</code> for it. The interesting idea,
+even if we have a <em>mutable data-structures</em> we still can write functions that behaves as
+if we had <em>immutable data</em>. That means, we return new data, instead of <em>mutating</em> data.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">module</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="t">ResizeArray</span> <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="f">map</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="f">f</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="i">oldArray</span> <span class="o">=</span>
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="i">newArray</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 7)" onmouseover="showTip(event, 'fs2', 7)" class="t">ResizeArray</span><span class="o">&lt;</span>_<span class="o">&gt;</span>()
+        <span class="k">for</span> <span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="i">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="i">oldArray</span> <span class="k">do</span>
+            <span onmouseout="hideTip(event, 'fs6', 10)" onmouseover="showTip(event, 'fs6', 10)" class="i">newArray</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 11)" onmouseover="showTip(event, 'fs8', 11)" class="f">Add</span> (<span onmouseout="hideTip(event, 'fs4', 12)" onmouseover="showTip(event, 'fs4', 12)" class="f">f</span> <span onmouseout="hideTip(event, 'fs7', 13)" onmouseover="showTip(event, 'fs7', 13)" class="i">x</span>)
+        <span onmouseout="hideTip(event, 'fs6', 14)" onmouseover="showTip(event, 'fs6', 14)" class="i">newArray</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Now we can do stuff like this.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs9', 15)" onmouseover="showTip(event, 'fs9', 15)" class="i">numbers</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 16)" onmouseover="showTip(event, 'fs10', 16)" class="t">ResizeArray</span><span class="o">&lt;</span>_<span class="o">&gt;</span>()
+<span onmouseout="hideTip(event, 'fs9', 17)" onmouseover="showTip(event, 'fs9', 17)" class="i">numbers</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 18)" onmouseover="showTip(event, 'fs11', 18)" class="f">Add</span>(<span class="n">1</span>)
+<span onmouseout="hideTip(event, 'fs9', 19)" onmouseover="showTip(event, 'fs9', 19)" class="i">numbers</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 20)" onmouseover="showTip(event, 'fs11', 20)" class="f">Add</span>(<span class="n">2</span>)
+<span onmouseout="hideTip(event, 'fs9', 21)" onmouseover="showTip(event, 'fs9', 21)" class="i">numbers</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 22)" onmouseover="showTip(event, 'fs11', 22)" class="f">Add</span>(<span class="n">3</span>)
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 23)" onmouseover="showTip(event, 'fs12', 23)" class="i">squaredNumbers</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 24)" onmouseover="showTip(event, 'fs10', 24)" class="t">ResizeArray</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs3', 25)" onmouseover="showTip(event, 'fs3', 25)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 26)" onmouseover="showTip(event, 'fs13', 26)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs13', 27)" onmouseover="showTip(event, 'fs13', 27)" class="i">x</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs13', 28)" onmouseover="showTip(event, 'fs13', 28)" class="i">x</span>) <span onmouseout="hideTip(event, 'fs9', 29)" onmouseover="showTip(event, 'fs9', 29)" class="i">numbers</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We now have two <code>ResizeArray</code>. <code>numbers</code> still contains <code>1</code>, <code>2</code> and <code>3</code> while <code>squaredNumbers</code>
+contains <code>1</code>, <code>4</code>, <code>9</code>. So while this behaves like <em>immutability</em>, it still isn't exactly
+<em>immutable</em>. We also see that in the <code>map</code> implementation. In <code>map</code> we first create
+an empty <em>mutable</em> <code>newArray</code>. While we loop over <code>oldArray</code> we <em>mutate</em> <code>newArray</code> by adding
+the result of the transformation <code>f x</code> to <code>newArray</code>. But the only reason why we could do that
+is because <code>newArray</code> is <em>mutable</em>!</p>
+<p>But what do we do if we have a true <em>immutable list</em> like the built-in F# list? We cannot start with
+an <code>empty list</code> just loop over <code>oldArray</code> and directly add an element to the empty list. We only can
+prepend elements, but this would create a whole new list and not <em>mutate</em> the empty list.</p>
+<p>Sure we can assign the new list to a new variable inside the loop. But this doesn't make much sense
+as with the next iteration we will lose our newly created list. The thing is, looping always need
+some kind of <em>mutable</em> variable outside of the loop that we can <em>mutate</em>.</p>
+<p>Actually F# supports <em>mutable variables</em> so as a quick fix we could define a <em>mutable variable</em>
+outside the loop.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs14', 30)" onmouseover="showTip(event, 'fs14', 30)" class="f">mapWithImmutableList</span> <span onmouseout="hideTip(event, 'fs4', 31)" onmouseover="showTip(event, 'fs4', 31)" class="f">f</span> (<span onmouseout="hideTip(event, 'fs15', 32)" onmouseover="showTip(event, 'fs15', 32)" class="i">list</span><span class="o">:</span>_ <span onmouseout="hideTip(event, 'fs15', 33)" onmouseover="showTip(event, 'fs15', 33)" class="t">list</span>) <span class="o">=</span>
+    <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs16', 34)" onmouseover="showTip(event, 'fs16', 34)" class="v">acc</span> <span class="o">=</span> []
+    <span class="k">for</span> <span onmouseout="hideTip(event, 'fs7', 35)" onmouseover="showTip(event, 'fs7', 35)" class="i">x</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs15', 36)" onmouseover="showTip(event, 'fs15', 36)" class="i">list</span> <span class="k">do</span>
+        <span onmouseout="hideTip(event, 'fs16', 37)" onmouseover="showTip(event, 'fs16', 37)" class="v">acc</span> <span class="o">&lt;-</span> (<span onmouseout="hideTip(event, 'fs4', 38)" onmouseover="showTip(event, 'fs4', 38)" class="f">f</span> <span onmouseout="hideTip(event, 'fs7', 39)" onmouseover="showTip(event, 'fs7', 39)" class="i">x</span>) <span class="o">::</span> <span onmouseout="hideTip(event, 'fs16', 40)" onmouseover="showTip(event, 'fs16', 40)" class="v">acc</span>
+    <span onmouseout="hideTip(event, 'fs16', 41)" onmouseover="showTip(event, 'fs16', 41)" class="v">acc</span>
+</code></pre></td>
+</tr>
+</table>
+<p>It doesn't mean we created a <em>mutable list</em> here. We still only have <em>immutable lists</em>.
+But <code>acc</code> itself is <em>mutable</em> and can be changed to point to a new <em>immutable list</em>.</p>
+<p>With <code>(f x) :: acc</code> we always create a whole new <em>immutable list</em> by using the <code>acc</code>
+from the previous <em>loop iteration</em>. So <code>acc</code> only keeps track of the <em>last or newest</em>
+<code>acc</code>.</p>
+<p>This implementation still has a problem as we will also <em>reverse</em> the list. The problem
+is that we only can <em>prepend</em> elements to a list and not <em>append</em> them.</p>
+<p>But on top, we still relaying on <em>mutable</em> variables. Let's first forget about the <em>reverse</em>
+problem. Here we see a general problem. Looping needs <em>mutable</em> variables! Sure, we
+also can do just some <em>side-effects</em> and don't <em>mutate</em> anything, but whenever you really
+want to compute something you are forced to use <em>mutation</em> if you choose a loop.</p>
+<p>Looping constructs in general just don't work nicely together with <em>immuability</em>. That's also
+the reason why looping is discouraged in functional programming. But it opens up the
+question how we solve the problems that <em>looping</em> solves. How can we for example go through an
+<em>immutable list</em> without <em>looping</em>? And how can we compute something with every element
+without accessing a <em>mutable variable</em>?</p>
+<p>The answer is: Through recursion!</p>
+<h2>Looping with recursion</h2>
+<p>To understand how we can replace loops through recursion, let's start with something simple. We
+start with a typical <code>for</code> loop as you can see with <code>C#</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">for</span> (<span class="k">int</span> i=<span class="n">0</span>; i&lt;<span class="n">10</span>; i+<span class="o">+</span>) {
+    Console.WriteLine(<span class="s">"{0}"</span>, i);
+}
+</code></pre></td></tr></table>
+<p>If we really appreciate <em>immutability</em> we cannot directly create such a looping construct.
+Because such a <code>for</code> loop relies on mutating <code>i</code> after every step. But it doesn't mean we can
+calculate <code>i + 1</code>. We can increment <code>i</code>, but we have to assign the result to a new variable.
+Technically we could expand the looping construct into separate statements.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs17', 42)" onmouseover="showTip(event, 'fs17', 42)" class="i">i</span>  <span class="o">=</span> <span class="n">0</span>
+<span onmouseout="hideTip(event, 'fs18', 43)" onmouseover="showTip(event, 'fs18', 43)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs17', 44)" onmouseover="showTip(event, 'fs17', 44)" class="i">i</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 45)" onmouseover="showTip(event, 'fs19', 45)" class="i">i1</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs17', 46)" onmouseover="showTip(event, 'fs17', 46)" class="i">i</span> <span class="o">+</span> <span class="n">1</span>
+<span onmouseout="hideTip(event, 'fs18', 47)" onmouseover="showTip(event, 'fs18', 47)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs19', 48)" onmouseover="showTip(event, 'fs19', 48)" class="i">i1</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 49)" onmouseover="showTip(event, 'fs20', 49)" class="i">i2</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs19', 50)" onmouseover="showTip(event, 'fs19', 50)" class="i">i1</span> <span class="o">+</span> <span class="n">1</span>
+<span onmouseout="hideTip(event, 'fs18', 51)" onmouseover="showTip(event, 'fs18', 51)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs20', 52)" onmouseover="showTip(event, 'fs20', 52)" class="i">i2</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 53)" onmouseover="showTip(event, 'fs21', 53)" class="i">i3</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs20', 54)" onmouseover="showTip(event, 'fs20', 54)" class="i">i2</span> <span class="o">+</span> <span class="n">1</span>
+<span onmouseout="hideTip(event, 'fs18', 55)" onmouseover="showTip(event, 'fs18', 55)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs21', 56)" onmouseover="showTip(event, 'fs21', 56)" class="i">i3</span>
+
+<span class="c">// ...</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Sure, writing stuff like that is simple stupid. We don't want to increment <code>i</code> ten times, always
+create a new variable, and a new print statement. But it is still interesting that the idea
+is the same with our first <code>map</code> implementation we did for <code>ResizeArray</code>.</p>
+<p>We always create a new <em>immutable state</em>, by using the previous state. And that is where functions
+come into play. Actually we are not limited to just assign the result of a calculation just to a
+variable. We also can pass the result to a function.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs22', 57)" onmouseover="showTip(event, 'fs22', 57)" class="i">calc</span> <span class="o">=</span> <span class="i">i</span> <span class="o">+</span> <span class="n">1</span>
+<span class="i">f</span> <span onmouseout="hideTip(event, 'fs22', 58)" onmouseover="showTip(event, 'fs22', 58)" class="i">calc</span>
+</code></pre></td>
+</tr>
+</table>
+<p>or better, we can do it in one step.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">f</span> (<span class="i">i</span> <span class="o">+</span> <span class="n">1</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>This is an important idea. It just means that when we call a function, it is also an assign statement
+at the same time! With this idea, we can actually create a looping construct just out of functions.
+Instead of mutating <code>i</code> at the end of a loop and repeating our loop. We just call our function
+recursively and pass it the next state as an argument!</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs23', 59)" onmouseover="showTip(event, 'fs23', 59)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs24', 60)" onmouseover="showTip(event, 'fs24', 60)" class="i">i</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs18', 61)" onmouseover="showTip(event, 'fs18', 61)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs24', 62)" onmouseover="showTip(event, 'fs24', 62)" class="i">i</span>
+    <span onmouseout="hideTip(event, 'fs23', 63)" onmouseover="showTip(event, 'fs23', 63)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs24', 64)" onmouseover="showTip(event, 'fs24', 64)" class="i">i</span><span class="o">+</span><span class="n">1</span>)
+
+<span onmouseout="hideTip(event, 'fs23', 65)" onmouseover="showTip(event, 'fs23', 65)" class="f">loop</span> <span class="n">0</span> <span class="c">// infinity loop</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Sure, we now have another problem, as we currently have an infinity loop. We now <em>always</em> call <code>loop i+1</code>.
+So we have to add some condition when we really want to loop.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs25', 66)" onmouseover="showTip(event, 'fs25', 66)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs24', 67)" onmouseover="showTip(event, 'fs24', 67)" class="i">i</span> <span class="o">=</span>
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs24', 68)" onmouseover="showTip(event, 'fs24', 68)" class="i">i</span> <span class="o">&lt;</span> <span class="n">10</span> <span class="k">then</span> 
+        <span onmouseout="hideTip(event, 'fs18', 69)" onmouseover="showTip(event, 'fs18', 69)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs24', 70)" onmouseover="showTip(event, 'fs24', 70)" class="i">i</span>
+        <span onmouseout="hideTip(event, 'fs25', 71)" onmouseover="showTip(event, 'fs25', 71)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs24', 72)" onmouseover="showTip(event, 'fs24', 72)" class="i">i</span><span class="o">+</span><span class="n">1</span>)
+
+<span onmouseout="hideTip(event, 'fs25', 73)" onmouseover="showTip(event, 'fs25', 73)" class="f">loop</span> <span class="n">0</span> <span class="c">// Will now print numbers from 0 to 9</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Let's abstract it further. Instead of hard coding <code>10</code> we want to provide the end as an argument.
+Additionally, we also want to be able to execute <em>any code</em> <em>inside our loop</em> iteration, instead
+of hard-coding the <em>print-statement</em>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs26', 74)" onmouseover="showTip(event, 'fs26', 74)" class="f">forLoop</span> <span onmouseout="hideTip(event, 'fs24', 75)" onmouseover="showTip(event, 'fs24', 75)" class="i">i</span> <span onmouseout="hideTip(event, 'fs27', 76)" onmouseover="showTip(event, 'fs27', 76)" class="i">stop</span> <span onmouseout="hideTip(event, 'fs28', 77)" onmouseover="showTip(event, 'fs28', 77)" class="f">f</span> <span class="o">=</span>
+    <span class="k">if</span> <span onmouseout="hideTip(event, 'fs24', 78)" onmouseover="showTip(event, 'fs24', 78)" class="i">i</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs27', 79)" onmouseover="showTip(event, 'fs27', 79)" class="i">stop</span> <span class="k">then</span>
+        <span onmouseout="hideTip(event, 'fs28', 80)" onmouseover="showTip(event, 'fs28', 80)" class="f">f</span> <span onmouseout="hideTip(event, 'fs24', 81)" onmouseover="showTip(event, 'fs24', 81)" class="i">i</span>
+        <span onmouseout="hideTip(event, 'fs26', 82)" onmouseover="showTip(event, 'fs26', 82)" class="f">forLoop</span> (<span onmouseout="hideTip(event, 'fs24', 83)" onmouseover="showTip(event, 'fs24', 83)" class="i">i</span><span class="o">+</span><span class="n">1</span>) <span onmouseout="hideTip(event, 'fs27', 84)" onmouseover="showTip(event, 'fs27', 84)" class="i">stop</span> <span onmouseout="hideTip(event, 'fs28', 85)" onmouseover="showTip(event, 'fs28', 85)" class="f">f</span>
+
+<span onmouseout="hideTip(event, 'fs26', 86)" onmouseover="showTip(event, 'fs26', 86)" class="f">forLoop</span> <span class="n">0</span> <span class="n">10</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 87)" onmouseover="showTip(event, 'fs24', 87)" class="i">i</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 88)" onmouseover="showTip(event, 'fs18', 88)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs24', 89)" onmouseover="showTip(event, 'fs24', 89)" class="i">i</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>We now basically recreated a <code>for</code> loop through a recursive function! We just can provide
+the starting and the stop value and just provide a function for the <em>loop-body</em> that describes
+what should be done at every step. The current <code>i</code> is just passed as an argument to our function
+<code>f</code>. This way we can do something with the value.</p>
+<p>Let's improve that solution a little bit. It feels a little bit awkward that we have
+to provide <code>stop</code> and <code>f</code> again as arguments. We can fix this problem by just creating a special
+<code>loop</code> function inside <code>forLoop</code> instead.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs29', 90)" onmouseover="showTip(event, 'fs29', 90)" class="f">forLoop</span> <span onmouseout="hideTip(event, 'fs30', 91)" onmouseover="showTip(event, 'fs30', 91)" class="i">start</span> <span onmouseout="hideTip(event, 'fs27', 92)" onmouseover="showTip(event, 'fs27', 92)" class="i">stop</span> <span onmouseout="hideTip(event, 'fs28', 93)" onmouseover="showTip(event, 'fs28', 93)" class="f">f</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs31', 94)" onmouseover="showTip(event, 'fs31', 94)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs24', 95)" onmouseover="showTip(event, 'fs24', 95)" class="i">i</span> <span class="o">=</span>
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs24', 96)" onmouseover="showTip(event, 'fs24', 96)" class="i">i</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs27', 97)" onmouseover="showTip(event, 'fs27', 97)" class="i">stop</span> <span class="k">then</span>
+            <span onmouseout="hideTip(event, 'fs28', 98)" onmouseover="showTip(event, 'fs28', 98)" class="f">f</span> <span onmouseout="hideTip(event, 'fs24', 99)" onmouseover="showTip(event, 'fs24', 99)" class="i">i</span>
+            <span onmouseout="hideTip(event, 'fs31', 100)" onmouseover="showTip(event, 'fs31', 100)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs24', 101)" onmouseover="showTip(event, 'fs24', 101)" class="i">i</span><span class="o">+</span><span class="n">1</span>)
+    <span onmouseout="hideTip(event, 'fs31', 102)" onmouseover="showTip(event, 'fs31', 102)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs30', 103)" onmouseover="showTip(event, 'fs30', 103)" class="i">start</span>
+
+<span onmouseout="hideTip(event, 'fs29', 104)" onmouseover="showTip(event, 'fs29', 104)" class="f">forLoop</span> <span class="n">0</span> <span class="n">10</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 105)" onmouseover="showTip(event, 'fs24', 105)" class="i">i</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 106)" onmouseover="showTip(event, 'fs18', 106)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs24', 107)" onmouseover="showTip(event, 'fs24', 107)" class="i">i</span>)
+</code></pre></td>
+</tr>
+</table>
+<p>Our <code>forLoop</code> function is not a recursive function any more, instead it contains a recursive <code>loop</code>
+function. <code>loop</code> only contains those variables as arguments that we really expect to change.</p>
+<p>This has several advantages:</p>
+<ol>
+<li><code>loop</code> itself is easier and nearly resembles the first <code>loop</code> we started with.</li>
+<li>
+We don't need to pass variables like <code>f</code> or <code>stop</code> to the recursive call as we don't expect
+them to change.
+</li>
+<li>
+This reduces the possibility of bugs as we cannot change variables that we didn't expect to change.
+For example, previously we could write: <code>forLoop (i+1) (stop+1) f</code>
+</li>
+<li>
+In other cases it also means we can <em>pre-</em> or <em>post-process</em> data before or after the loop
+starts/finish.
+</li>
+<li>
+Sometimes we just want to provide a fixed starting value. For example in a <code>sum</code> function
+we provide <code>0</code> as the starting value. We don't want that the user must enter <code>0</code> as a
+starting value for the recursion call!
+</li>
+<li>
+Different names for arguments. For example our <code>forLoop</code> now has <code>start</code> instead of <code>i</code>. But
+it doesn't make sense to use <code>start</code> inside of <code>loop</code>. Clearer names can help in understanding
+code. But it also helps users of <code>forEach</code>. As they now see <code>start</code> as an argument, not <code>i</code>.
+</li>
+</ol>
+<p>The only problem so far is that we only can call functions that do some sort of side-effect.
+But we cannot for example create something new out of the looping. For example if we want to
+create the sum of all numbers from 0 to 9 we could write something like this in C#</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">int</span> sum <span class="o">=</span> <span class="n">0</span>
+<span class="k">for</span> (<span class="k">int</span> i=<span class="n">0</span>; i&lt;<span class="n">10</span>; i+<span class="o">+</span>) {
+    sum <span class="o">=</span> sum <span class="o">+</span> i;
+}
+</code></pre></td></tr></table>
+<p>But we now know how to fix that problem. We just add <code>sum</code> to the <code>loop</code> function
+as this is a value that we expect to change with every <em>iteration</em>. On top our function <code>f</code> must
+change. In the body of a loop we have access to <code>i</code> and access to <code>sum</code> outside of the loop.
+With recursion we only get access to those data that we pass to the <code>f</code> function. So we also must
+pass <code>sum</code> as an argument to our <code>f</code> function. As we cannot <em>mutate</em> <code>sum</code> inside <code>f</code> we expect that
+<code>f</code> returns the new <code>sum</code> that we then use for the next <em>recursive call</em>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs32', 108)" onmouseover="showTip(event, 'fs32', 108)" class="f">forLoop</span> <span onmouseout="hideTip(event, 'fs30', 109)" onmouseover="showTip(event, 'fs30', 109)" class="i">start</span> <span onmouseout="hideTip(event, 'fs27', 110)" onmouseover="showTip(event, 'fs27', 110)" class="i">stop</span> <span onmouseout="hideTip(event, 'fs33', 111)" onmouseover="showTip(event, 'fs33', 111)" class="f">f</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs34', 112)" onmouseover="showTip(event, 'fs34', 112)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs24', 113)" onmouseover="showTip(event, 'fs24', 113)" class="i">i</span> <span onmouseout="hideTip(event, 'fs35', 114)" onmouseover="showTip(event, 'fs35', 114)" class="i">sum</span> <span class="o">=</span>
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs24', 115)" onmouseover="showTip(event, 'fs24', 115)" class="i">i</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs27', 116)" onmouseover="showTip(event, 'fs27', 116)" class="i">stop</span> <span class="k">then</span> 
+            <span class="c">// create the next sum</span>
+            <span class="k">let</span> <span onmouseout="hideTip(event, 'fs36', 117)" onmouseover="showTip(event, 'fs36', 117)" class="i">nextSum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs33', 118)" onmouseover="showTip(event, 'fs33', 118)" class="f">f</span> <span onmouseout="hideTip(event, 'fs24', 119)" onmouseover="showTip(event, 'fs24', 119)" class="i">i</span> <span onmouseout="hideTip(event, 'fs35', 120)" onmouseover="showTip(event, 'fs35', 120)" class="i">sum</span>
+            <span class="c">// next recursive call with updated &quot;i&quot; and &quot;sum&quot;</span>
+            <span onmouseout="hideTip(event, 'fs34', 121)" onmouseover="showTip(event, 'fs34', 121)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs24', 122)" onmouseover="showTip(event, 'fs24', 122)" class="i">i</span><span class="o">+</span><span class="n">1</span>) <span onmouseout="hideTip(event, 'fs36', 123)" onmouseover="showTip(event, 'fs36', 123)" class="i">nextSum</span>
+        <span class="k">else</span>
+            <span class="c">// Return &quot;sum&quot; as soon we reach stop</span>
+            <span onmouseout="hideTip(event, 'fs35', 124)" onmouseover="showTip(event, 'fs35', 124)" class="i">sum</span>
+    <span onmouseout="hideTip(event, 'fs34', 125)" onmouseover="showTip(event, 'fs34', 125)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs30', 126)" onmouseover="showTip(event, 'fs30', 126)" class="i">start</span> <span class="n">0</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 127)" onmouseover="showTip(event, 'fs37', 127)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 128)" onmouseover="showTip(event, 'fs32', 128)" class="f">forLoop</span> <span class="n">0</span> <span class="n">10</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 129)" onmouseover="showTip(event, 'fs24', 129)" class="i">i</span> <span onmouseout="hideTip(event, 'fs35', 130)" onmouseover="showTip(event, 'fs35', 130)" class="i">sum</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs35', 131)" onmouseover="showTip(event, 'fs35', 131)" class="i">sum</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs24', 132)" onmouseover="showTip(event, 'fs24', 132)" class="i">i</span>) <span class="c">// 45</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The only thing I dislike at this point is that the usage of our <code>forLoop</code> is still limited. We have
+the signature.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">start</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs38', 133)" onmouseover="showTip(event, 'fs38', 133)" class="i">int</span> <span class="k">-&gt;</span> <span class="i">stop</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs38', 134)" onmouseover="showTip(event, 'fs38', 134)" class="i">int</span> <span class="k">-&gt;</span> <span class="i">f</span><span class="o">:</span>(<span onmouseout="hideTip(event, 'fs38', 135)" onmouseover="showTip(event, 'fs38', 135)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs38', 136)" onmouseover="showTip(event, 'fs38', 136)" class="i">int</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs38', 137)" onmouseover="showTip(event, 'fs38', 137)" class="i">int</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs38', 138)" onmouseover="showTip(event, 'fs38', 138)" class="i">int</span>
+</code></pre></td>
+</tr>
+</table>
+<p>It makes sense that <code>start</code> and <code>stop</code> are <code>int</code>. But usually we expect that the <em>looping-body</em> (<code>f</code>)
+can work with any type. Or in other words, that <code>sum</code> can be of any type. And that a <code>forLoop</code>
+also can return any type. But currently we are limited to <code>int</code>.</p>
+<p>It is an <code>int</code> because we call <code>loop start 0</code> and directly pass <code>0</code> (an <code>int</code>) as <code>sum</code>.
+It makes more sense that the user can provide the <em>initial-value</em>. And <code>f</code> just returns a new value
+of the same type. This way, the <em>initial-value</em> can be generic.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs39', 139)" onmouseover="showTip(event, 'fs39', 139)" class="f">forLoop</span> <span onmouseout="hideTip(event, 'fs30', 140)" onmouseover="showTip(event, 'fs30', 140)" class="i">start</span> <span onmouseout="hideTip(event, 'fs27', 141)" onmouseover="showTip(event, 'fs27', 141)" class="i">stop</span> <span onmouseout="hideTip(event, 'fs40', 142)" onmouseover="showTip(event, 'fs40', 142)" class="i">init</span> <span onmouseout="hideTip(event, 'fs41', 143)" onmouseover="showTip(event, 'fs41', 143)" class="f">f</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs42', 144)" onmouseover="showTip(event, 'fs42', 144)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs24', 145)" onmouseover="showTip(event, 'fs24', 145)" class="i">i</span> <span onmouseout="hideTip(event, 'fs43', 146)" onmouseover="showTip(event, 'fs43', 146)" class="i">acc</span> <span class="o">=</span>
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs24', 147)" onmouseover="showTip(event, 'fs24', 147)" class="i">i</span> <span class="o">&lt;</span> <span onmouseout="hideTip(event, 'fs27', 148)" onmouseover="showTip(event, 'fs27', 148)" class="i">stop</span> <span class="k">then</span> 
+            <span class="k">let</span> <span onmouseout="hideTip(event, 'fs44', 149)" onmouseover="showTip(event, 'fs44', 149)" class="i">nextAcc</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs41', 150)" onmouseover="showTip(event, 'fs41', 150)" class="f">f</span> <span onmouseout="hideTip(event, 'fs24', 151)" onmouseover="showTip(event, 'fs24', 151)" class="i">i</span> <span onmouseout="hideTip(event, 'fs43', 152)" onmouseover="showTip(event, 'fs43', 152)" class="i">acc</span>
+            <span onmouseout="hideTip(event, 'fs42', 153)" onmouseover="showTip(event, 'fs42', 153)" class="f">loop</span> (<span onmouseout="hideTip(event, 'fs24', 154)" onmouseover="showTip(event, 'fs24', 154)" class="i">i</span><span class="o">+</span><span class="n">1</span>) <span onmouseout="hideTip(event, 'fs44', 155)" onmouseover="showTip(event, 'fs44', 155)" class="i">nextAcc</span>
+        <span class="k">else</span>
+            <span onmouseout="hideTip(event, 'fs43', 156)" onmouseover="showTip(event, 'fs43', 156)" class="i">acc</span>
+    <span onmouseout="hideTip(event, 'fs42', 157)" onmouseover="showTip(event, 'fs42', 157)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs30', 158)" onmouseover="showTip(event, 'fs30', 158)" class="i">start</span> <span onmouseout="hideTip(event, 'fs40', 159)" onmouseover="showTip(event, 'fs40', 159)" class="i">init</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 160)" onmouseover="showTip(event, 'fs37', 160)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs39', 161)" onmouseover="showTip(event, 'fs39', 161)" class="f">forLoop</span> <span class="n">0</span> <span class="n">10</span> <span class="n">0</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 162)" onmouseover="showTip(event, 'fs24', 162)" class="i">i</span> <span onmouseout="hideTip(event, 'fs35', 163)" onmouseover="showTip(event, 'fs35', 163)" class="i">sum</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs35', 164)" onmouseover="showTip(event, 'fs35', 164)" class="i">sum</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs24', 165)" onmouseover="showTip(event, 'fs24', 165)" class="i">i</span>) <span class="c">// 45</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We now have the signature:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">start</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs38', 166)" onmouseover="showTip(event, 'fs38', 166)" class="i">int</span> <span class="k">-&gt;</span> <span class="i">stop</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs38', 167)" onmouseover="showTip(event, 'fs38', 167)" class="i">int</span> <span class="k">-&gt;</span> <span class="i">init</span><span class="o">:</span><span class="o">&#39;</span><span class="i">a</span> <span class="k">-&gt;</span> <span class="i">f</span><span class="o">:</span>(<span onmouseout="hideTip(event, 'fs38', 168)" onmouseover="showTip(event, 'fs38', 168)" class="i">int</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">a</span> <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">a</span>) <span class="k">-&gt;</span> <span class="o">&#39;</span><span class="i">a</span>
+</code></pre></td>
+</tr>
+</table>
+<p>We now created a <code>forLoop</code> just with recursion and without any <em>mutable variable</em>. Our loop supports
+the creation of any value. The function <code>f</code> just returns the next state (<code>acc</code>) that is used for
+the next <em>iteration/recursion</em> and we don't need any <em>mutable variable</em> anymore.</p>
+<p>We now can create any type not just <code>int</code>. We could for example build another list from it in
+an <em>immutable</em> way.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs45', 169)" onmouseover="showTip(event, 'fs45', 169)" class="i">listOfNumbers</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs39', 170)" onmouseover="showTip(event, 'fs39', 170)" class="f">forLoop</span> <span class="n">0</span> <span class="n">10</span> [] (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 171)" onmouseover="showTip(event, 'fs24', 171)" class="i">i</span> <span onmouseout="hideTip(event, 'fs46', 172)" onmouseover="showTip(event, 'fs46', 172)" class="i">list</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs24', 173)" onmouseover="showTip(event, 'fs24', 173)" class="i">i</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs46', 174)" onmouseover="showTip(event, 'fs46', 174)" class="i">list</span>)
+<span class="c">// [9;8;7;6;5;4;3;2;1;0]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Or build a string</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs47', 175)" onmouseover="showTip(event, 'fs47', 175)" class="i">stringofNumbers</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs39', 176)" onmouseover="showTip(event, 'fs39', 176)" class="f">forLoop</span> <span class="n">0</span> <span class="n">10</span> <span class="s">&quot;&quot;</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 177)" onmouseover="showTip(event, 'fs24', 177)" class="i">i</span> <span onmouseout="hideTip(event, 'fs48', 178)" onmouseover="showTip(event, 'fs48', 178)" class="i">str</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs48', 179)" onmouseover="showTip(event, 'fs48', 179)" class="i">str</span> <span class="o">+</span> (<span onmouseout="hideTip(event, 'fs49', 180)" onmouseover="showTip(event, 'fs49', 180)" class="f">string</span> <span onmouseout="hideTip(event, 'fs24', 181)" onmouseover="showTip(event, 'fs24', 181)" class="i">i</span>))
+<span class="c">// &quot;0123456789&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Or start with a value and just repeatedly call a function on it</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs50', 182)" onmouseover="showTip(event, 'fs50', 182)" class="i">x</span> <span class="o">=</span> <span class="n">100.0</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs51', 183)" onmouseover="showTip(event, 'fs51', 183)" class="i">y</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs39', 184)" onmouseover="showTip(event, 'fs39', 184)" class="f">forLoop</span> <span class="n">0</span> <span class="n">5</span> <span onmouseout="hideTip(event, 'fs50', 185)" onmouseover="showTip(event, 'fs50', 185)" class="i">x</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs24', 186)" onmouseover="showTip(event, 'fs24', 186)" class="i">i</span> <span onmouseout="hideTip(event, 'fs52', 187)" onmouseover="showTip(event, 'fs52', 187)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs52', 188)" onmouseover="showTip(event, 'fs52', 188)" class="i">x</span> <span class="o">/</span> <span class="n">2.0</span>)
+<span class="c">// 3.125</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>Creating an immutable <code>foreach</code></h2>
+<p>So far we only looped over numbers. But usually we want to loop over whole <em>data-structures</em>.
+In C# we have <code>foreach</code> for this kind of idea. For example we can loop over a list in this way.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">var</span> sum <span class="o">=</span> <span class="n">0</span>;
+<span class="k">foreach</span> ( <span class="k">var</span> x <span class="k">in</span> list ) {
+    sum <span class="o">=</span> sum <span class="o">+</span> x;
+}
+</code></pre></td></tr></table>
+<p>We now want to do the same but with an <em>immutable F# list</em> instead, so how do we loop an
+<em>immutable list</em>? Actually the only thing we can do with a F# list is either prepend some element
+or use pattern matching to extract values from the beginning.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs53', 189)" onmouseover="showTip(event, 'fs53', 189)" class="i">numbers1</span> <span class="o">=</span> [<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>;<span class="n">5</span>]
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs54', 190)" onmouseover="showTip(event, 'fs54', 190)" class="i">numbers2</span> <span class="o">=</span> <span class="n">1</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs53', 191)" onmouseover="showTip(event, 'fs53', 191)" class="i">numbers1</span> <span class="c">// [1;2;3;4;5]</span>
+
+<span class="k">let</span> (<span onmouseout="hideTip(event, 'fs55', 192)" onmouseover="showTip(event, 'fs55', 192)" class="i">head</span><span class="o">::</span><span onmouseout="hideTip(event, 'fs56', 193)" onmouseover="showTip(event, 'fs56', 193)" class="i">tail</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs54', 194)" onmouseover="showTip(event, 'fs54', 194)" class="i">numbers2</span>
+
+<span onmouseout="hideTip(event, 'fs55', 195)" onmouseover="showTip(event, 'fs55', 195)" class="i">head</span> <span class="c">// 1</span>
+<span onmouseout="hideTip(event, 'fs56', 196)" onmouseover="showTip(event, 'fs56', 196)" class="i">tail</span> <span class="c">// [2;3;4;5]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Doing the extraction with a <code>let</code> is usually discouraged because such an operation could fail.
+If we have an empty list for example we couldn't extract the first element of a list
+(and the code throws an exception). With Pattern matching we can specify multiple cases that we
+can check. But as you already can imagine again. This must be recursive again! Because we
+repeatedly want to extract one element from <code>tail</code> and we sure don't want to write:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> (<span onmouseout="hideTip(event, 'fs57', 197)" onmouseover="showTip(event, 'fs57', 197)" class="i">head1</span><span class="o">::</span><span onmouseout="hideTip(event, 'fs58', 198)" onmouseover="showTip(event, 'fs58', 198)" class="i">tail1</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs54', 199)" onmouseover="showTip(event, 'fs54', 199)" class="i">numbers2</span> <span class="c">// 1 [2;3;4;5]</span>
+<span class="k">let</span> (<span onmouseout="hideTip(event, 'fs59', 200)" onmouseover="showTip(event, 'fs59', 200)" class="i">head2</span><span class="o">::</span><span onmouseout="hideTip(event, 'fs60', 201)" onmouseover="showTip(event, 'fs60', 201)" class="i">tail2</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs58', 202)" onmouseover="showTip(event, 'fs58', 202)" class="i">tail1</span>    <span class="c">// 2 [3;4;5]</span>
+<span class="k">let</span> (<span onmouseout="hideTip(event, 'fs61', 203)" onmouseover="showTip(event, 'fs61', 203)" class="i">head3</span><span class="o">::</span><span onmouseout="hideTip(event, 'fs62', 204)" onmouseover="showTip(event, 'fs62', 204)" class="i">tail3</span>) <span class="o">=</span> <span onmouseout="hideTip(event, 'fs60', 205)" onmouseover="showTip(event, 'fs60', 205)" class="i">tail2</span>    <span class="c">// 3 [4;5]</span>
+<span class="c">// and so on ...</span>
+</code></pre></td>
+</tr>
+</table>
+<p>And on top, we need an exit condition. We want to end as soon we end up with an empty list for <code>tail</code>.
+Now let's do the same stuff we did with our <code>forLoop</code>. We expect some <em>initial value</em> that we can
+specify as an <em>accumulator</em>. The <code>f</code> function now just gets the list element and our <em>accumulator</em>.
+Once we end up with an empty list, we just return the <em>accumulator</em>. We call this function <code>fold</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs63', 206)" onmouseover="showTip(event, 'fs63', 206)" class="f">fold</span> <span onmouseout="hideTip(event, 'fs64', 207)" onmouseover="showTip(event, 'fs64', 207)" class="f">f</span> (<span onmouseout="hideTip(event, 'fs65', 208)" onmouseover="showTip(event, 'fs65', 208)" class="i">acc</span><span class="o">:</span><span class="o">&#39;</span><span class="i">State</span>) <span onmouseout="hideTip(event, 'fs15', 209)" onmouseover="showTip(event, 'fs15', 209)" class="i">list</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs66', 210)" onmouseover="showTip(event, 'fs66', 210)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs67', 211)" onmouseover="showTip(event, 'fs67', 211)" class="i">remainingList</span> <span onmouseout="hideTip(event, 'fs65', 212)" onmouseover="showTip(event, 'fs65', 212)" class="i">acc</span> <span class="o">=</span>
+        <span class="k">match</span> <span onmouseout="hideTip(event, 'fs67', 213)" onmouseover="showTip(event, 'fs67', 213)" class="i">remainingList</span> <span class="k">with</span>
+        | []         <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs65', 214)" onmouseover="showTip(event, 'fs65', 214)" class="i">acc</span>  <span class="c">// We return &quot;acc&quot; when we reached the end of the list</span>
+        | <span onmouseout="hideTip(event, 'fs68', 215)" onmouseover="showTip(event, 'fs68', 215)" class="i">head</span><span class="o">::</span><span onmouseout="hideTip(event, 'fs69', 216)" onmouseover="showTip(event, 'fs69', 216)" class="i">tail</span> <span class="k">-&gt;</span>      <span class="c">// extract first element of remainingList</span>
+            <span class="k">let</span> <span onmouseout="hideTip(event, 'fs70', 217)" onmouseover="showTip(event, 'fs70', 217)" class="i">nextAcc</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs64', 218)" onmouseover="showTip(event, 'fs64', 218)" class="f">f</span> <span onmouseout="hideTip(event, 'fs65', 219)" onmouseover="showTip(event, 'fs65', 219)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs68', 220)" onmouseover="showTip(event, 'fs68', 220)" class="i">head</span> <span class="c">// Compute the next accumulator</span>
+            <span onmouseout="hideTip(event, 'fs66', 221)" onmouseover="showTip(event, 'fs66', 221)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs69', 222)" onmouseover="showTip(event, 'fs69', 222)" class="i">tail</span> <span onmouseout="hideTip(event, 'fs70', 223)" onmouseover="showTip(event, 'fs70', 223)" class="i">nextAcc</span>        <span class="c">// Recurse with remaining list &quot;tail&quot; and &quot;nextAcc&quot;</span>
+    <span onmouseout="hideTip(event, 'fs66', 224)" onmouseover="showTip(event, 'fs66', 224)" class="f">loop</span> <span onmouseout="hideTip(event, 'fs15', 225)" onmouseover="showTip(event, 'fs15', 225)" class="i">list</span> <span onmouseout="hideTip(event, 'fs65', 226)" onmouseover="showTip(event, 'fs65', 226)" class="i">acc</span>
+</code></pre></td>
+</tr>
+</table>
+<p>I also changed the order of the arguments compared to the <code>forEach</code> function. Now <code>f</code> comes first
+followed by <code>acc</code> and <code>list</code>. Summing a list of <code>int</code>s can now be written as:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 227)" onmouseover="showTip(event, 'fs37', 227)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs63', 228)" onmouseover="showTip(event, 'fs63', 228)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs71', 229)" onmouseover="showTip(event, 'fs71', 229)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs13', 230)" onmouseover="showTip(event, 'fs13', 230)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 231)" onmouseover="showTip(event, 'fs71', 231)" class="i">acc</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs13', 232)" onmouseover="showTip(event, 'fs13', 232)" class="i">x</span>) <span class="n">0</span> [<span class="n">1</span> <span class="o">..</span> <span class="n">9</span>] <span class="c">// 45</span>
+</code></pre></td>
+</tr>
+</table>
+<p>So, what is <code>fold</code> exactly? <code>fold</code> is just the idea of looping through a <em>data-structure</em>
+in an <em>immutable way</em>. Instead of accessing a <em>mutable variable</em> that you access and <em>mutate</em> while
+you are looping, you provide a function as the <em>loop-body</em> and an <em>initial-accumulator</em>.</p>
+<p>In looping you then have access to the current element and a <em>mutable variable</em> that you can
+modify. In <code>fold</code> your <code>f</code> function you get the current element and the last state as
+function arguments. Instead of <em>mutating</em> a variable outside of a loop. In <code>fold</code> you just
+return the new state that will be used for the next recursive call.</p>
+<p>Your <em>accumulator</em> will be returned as a result once you traversed all elements of
+your data-structure.</p>
+<h2>Creating <code>map</code></h2>
+<p>Now that we abstracted the recursive looping in it's own function, we don't need to write a
+recursive loop function anymore to traverse a list! We just can use <code>fold</code> for this purpose.</p>
+<p>A first attempt to build <code>map</code> could look like that.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs72', 233)" onmouseover="showTip(event, 'fs72', 233)" class="f">map</span> <span onmouseout="hideTip(event, 'fs4', 234)" onmouseover="showTip(event, 'fs4', 234)" class="f">f</span> <span onmouseout="hideTip(event, 'fs15', 235)" onmouseover="showTip(event, 'fs15', 235)" class="i">list</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs63', 236)" onmouseover="showTip(event, 'fs63', 236)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs73', 237)" onmouseover="showTip(event, 'fs73', 237)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs7', 238)" onmouseover="showTip(event, 'fs7', 238)" class="i">x</span> <span class="k">-&gt;</span> <span class="c">// foreach (var x in list )</span>
+        (<span onmouseout="hideTip(event, 'fs4', 239)" onmouseover="showTip(event, 'fs4', 239)" class="f">f</span> <span onmouseout="hideTip(event, 'fs7', 240)" onmouseover="showTip(event, 'fs7', 240)" class="i">x</span>) <span class="o">::</span> <span onmouseout="hideTip(event, 'fs73', 241)" onmouseover="showTip(event, 'fs73', 241)" class="i">acc</span>   <span class="c">//     nextAcc &lt;- (f x) :: acc</span>
+    ) [] <span onmouseout="hideTip(event, 'fs15', 242)" onmouseover="showTip(event, 'fs15', 242)" class="i">list</span>          <span class="c">// Start with &quot;[]&quot; as &quot;acc&quot; and go through &quot;list&quot;</span>
+
+<span onmouseout="hideTip(event, 'fs72', 243)" onmouseover="showTip(event, 'fs72', 243)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 244)" onmouseover="showTip(event, 'fs13', 244)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs13', 245)" onmouseover="showTip(event, 'fs13', 245)" class="i">x</span> <span class="o">*</span> <span class="n">2</span>) [<span class="n">0..</span><span class="n">9</span>]
+<span class="c">// [18; 16; 14; 12; 10; 8; 6; 4; 2; 0]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>But we still have the same problem as in the beginning. The list is reversed because we <em>prepend</em>
+and not <em>append</em> elements. As we cannot <em>append</em> we have to provide another solution.</p>
+<p>Besides a <code>fold</code> we usually also provide a <code>foldBack</code>. A <code>foldBack</code> just traverses a data-structure
+backwards or from <em>right-to-left</em> instead of <em>left-to-right</em>.</p>
+<p>But we also cannot easily go through a list backwards, an easy fix to this problem is when we
+implement <code>foldBack</code> by first <em>reversing</em> the input list and then use <code>fold</code> on it. After we
+have <code>foldBack</code> we can define <code>map</code> with <code>foldBack</code> instead of <code>fold</code>.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Reverses a List</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs74', 246)" onmouseover="showTip(event, 'fs74', 246)" class="f">rev</span> <span onmouseout="hideTip(event, 'fs15', 247)" onmouseover="showTip(event, 'fs15', 247)" class="i">list</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs63', 248)" onmouseover="showTip(event, 'fs63', 248)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs75', 249)" onmouseover="showTip(event, 'fs75', 249)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs7', 250)" onmouseover="showTip(event, 'fs7', 250)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs7', 251)" onmouseover="showTip(event, 'fs7', 251)" class="i">x</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs75', 252)" onmouseover="showTip(event, 'fs75', 252)" class="i">acc</span>) [] <span onmouseout="hideTip(event, 'fs15', 253)" onmouseover="showTip(event, 'fs15', 253)" class="i">list</span>
+
+<span class="c">// foldBack loops through the list from the end to start</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs76', 254)" onmouseover="showTip(event, 'fs76', 254)" class="f">foldBack</span> <span onmouseout="hideTip(event, 'fs77', 255)" onmouseover="showTip(event, 'fs77', 255)" class="f">f</span> <span onmouseout="hideTip(event, 'fs15', 256)" onmouseover="showTip(event, 'fs15', 256)" class="i">list</span> (<span onmouseout="hideTip(event, 'fs65', 257)" onmouseover="showTip(event, 'fs65', 257)" class="i">acc</span><span class="o">:</span><span class="o">&#39;</span><span class="i">State</span>) <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs63', 258)" onmouseover="showTip(event, 'fs63', 258)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs65', 259)" onmouseover="showTip(event, 'fs65', 259)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs7', 260)" onmouseover="showTip(event, 'fs7', 260)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs77', 261)" onmouseover="showTip(event, 'fs77', 261)" class="f">f</span> <span onmouseout="hideTip(event, 'fs7', 262)" onmouseover="showTip(event, 'fs7', 262)" class="i">x</span> <span onmouseout="hideTip(event, 'fs65', 263)" onmouseover="showTip(event, 'fs65', 263)" class="i">acc</span>) <span onmouseout="hideTip(event, 'fs65', 264)" onmouseover="showTip(event, 'fs65', 264)" class="i">acc</span> (<span onmouseout="hideTip(event, 'fs74', 265)" onmouseover="showTip(event, 'fs74', 265)" class="f">rev</span> <span onmouseout="hideTip(event, 'fs15', 266)" onmouseover="showTip(event, 'fs15', 266)" class="i">list</span>)
+
+<span class="c">// map defined in terms of foldBack</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs72', 267)" onmouseover="showTip(event, 'fs72', 267)" class="f">map</span> <span onmouseout="hideTip(event, 'fs4', 268)" onmouseover="showTip(event, 'fs4', 268)" class="f">f</span> <span onmouseout="hideTip(event, 'fs15', 269)" onmouseover="showTip(event, 'fs15', 269)" class="i">list</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs76', 270)" onmouseover="showTip(event, 'fs76', 270)" class="f">foldBack</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs7', 271)" onmouseover="showTip(event, 'fs7', 271)" class="i">x</span> <span onmouseout="hideTip(event, 'fs73', 272)" onmouseover="showTip(event, 'fs73', 272)" class="i">acc</span> <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'fs4', 273)" onmouseover="showTip(event, 'fs4', 273)" class="f">f</span> <span onmouseout="hideTip(event, 'fs7', 274)" onmouseover="showTip(event, 'fs7', 274)" class="i">x</span>) <span class="o">::</span> <span onmouseout="hideTip(event, 'fs73', 275)" onmouseover="showTip(event, 'fs73', 275)" class="i">acc</span>) <span onmouseout="hideTip(event, 'fs15', 276)" onmouseover="showTip(event, 'fs15', 276)" class="i">list</span> []
+
+<span class="c">// Now we get the right result</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs78', 277)" onmouseover="showTip(event, 'fs78', 277)" class="i">numbers</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs72', 278)" onmouseover="showTip(event, 'fs72', 278)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 279)" onmouseover="showTip(event, 'fs13', 279)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs13', 280)" onmouseover="showTip(event, 'fs13', 280)" class="i">x</span> <span class="o">*</span> <span class="n">2</span>) [<span class="n">1</span> <span class="o">..</span> <span class="n">9</span>]
+<span class="c">// [2; 4; 6; 8; 10; 12; 14; 16; 18]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Probably you wonder why we choose different argument orders for <code>fold</code> and <code>foldBack</code> including the
+arguments for the <code>f</code> function. In <code>fold</code> we first have <code>acc</code> then <code>x</code>, in <code>foldBack</code> it is reversed.
+<code>x</code> then <code>acc</code>. The reason is, the position of <code>acc</code> <em>resembles</em> the order how we traverse the list.</p>
+<p>In <code>fold</code> we go from left to right. We start with the initial <code>acc</code>, we extract the first value
+from our list and we somehow <em>combine</em> it with the already present <code>acc</code>. Let's visualize the
+steps that code like this do:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 281)" onmouseover="showTip(event, 'fs37', 281)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs63', 282)" onmouseover="showTip(event, 'fs63', 282)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs71', 283)" onmouseover="showTip(event, 'fs71', 283)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs13', 284)" onmouseover="showTip(event, 'fs13', 284)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 285)" onmouseover="showTip(event, 'fs71', 285)" class="i">acc</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs13', 286)" onmouseover="showTip(event, 'fs13', 286)" class="i">x</span>) <span class="n">0</span> [<span class="n">1..</span><span class="n">5</span>]
+</code></pre></td>
+</tr>
+</table>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">acc</span> | <span onmouseout="hideTip(event, 'fs79', 287)" onmouseover="showTip(event, 'fs79', 287)" class="i">list</span>        | <span class="i">acc</span> <span class="o">+</span> <span class="i">x</span>
+<span class="o">-----------------------------</span>
+<span class="n">0</span>   | [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>;<span class="n">5</span>] | <span class="n">0</span> <span class="o">+</span> <span class="n">1</span>
+<span class="n">1</span>   | [<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>;<span class="n">5</span>]   | <span class="n">1</span> <span class="o">+</span> <span class="n">2</span>
+<span class="n">3</span>   | [<span class="n">3</span>;<span class="n">4</span>;<span class="n">5</span>]     | <span class="n">3</span> <span class="o">+</span> <span class="n">3</span>
+<span class="n">6</span>   | [<span class="n">4</span>;<span class="n">5</span>]       | <span class="n">6</span> <span class="o">+</span> <span class="n">4</span>
+<span class="n">10</span>  | [<span class="n">5</span>]         | <span class="n">10</span> <span class="o">+</span> <span class="n">5</span>
+<span class="n">15</span>  | []          | <span class="k">return</span> <span class="k">-&gt;</span> <span class="n">15</span>
+</code></pre></td>
+</tr>
+</table>
+<p>When we use <code>foldBack</code> we get the same result, but we go from right to left.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs37', 288)" onmouseover="showTip(event, 'fs37', 288)" class="i">sum</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs76', 289)" onmouseover="showTip(event, 'fs76', 289)" class="f">foldBack</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 290)" onmouseover="showTip(event, 'fs13', 290)" class="i">x</span> <span onmouseout="hideTip(event, 'fs71', 291)" onmouseover="showTip(event, 'fs71', 291)" class="i">acc</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs13', 292)" onmouseover="showTip(event, 'fs13', 292)" class="i">x</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs71', 293)" onmouseover="showTip(event, 'fs71', 293)" class="i">acc</span>) [<span class="n">1..</span><span class="n">5</span>] <span class="n">0</span>
+</code></pre></td>
+</tr>
+</table>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs79', 294)" onmouseover="showTip(event, 'fs79', 294)" class="i">list</span>        | <span class="i">acc</span> | <span class="i">x</span> <span class="o">+</span> <span class="i">acc</span>
+<span class="o">---------------------------</span>
+[<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>;<span class="n">5</span>] | <span class="n">0</span>   | <span class="n">5</span> <span class="o">+</span> <span class="n">0</span>
+  [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>;<span class="n">4</span>] | <span class="n">5</span>   | <span class="n">4</span> <span class="o">+</span> <span class="n">5</span>
+    [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>] | <span class="n">9</span>   | <span class="n">3</span> <span class="o">+</span> <span class="n">9</span>
+      [<span class="n">1</span>;<span class="n">2</span>] | <span class="n">12</span>  | <span class="n">2</span> <span class="o">+</span> <span class="n">12</span>
+        [<span class="n">1</span>] | <span class="n">14</span>  | <span class="n">1</span> <span class="o">+</span> <span class="n">14</span>
+         [] | <span class="n">15</span>  | <span class="k">return</span> <span class="k">-&gt;</span> <span class="n">15</span>
+</code></pre></td>
+</tr>
+</table>
+<p>That's why we use <code>acc x</code> in <code>fold</code> and <code>x acc</code> in <code>foldBack</code>. For summing numbers this
+doesn't make any difference, but for other operations like <code>map</code> it does!</p>
+<h2><code>length</code>, <code>filter</code>, <code>iter</code>, <code>append</code>, <code>concat</code> and <code>collect</code></h2>
+<p>Let's create some more functions. As an exercise you also can try to first implement
+those functions yourself.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Length</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs80', 295)" onmouseover="showTip(event, 'fs80', 295)" class="f">length</span> <span onmouseout="hideTip(event, 'fs81', 296)" onmouseover="showTip(event, 'fs81', 296)" class="i">xs</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs63', 297)" onmouseover="showTip(event, 'fs63', 297)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs71', 298)" onmouseover="showTip(event, 'fs71', 298)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs7', 299)" onmouseover="showTip(event, 'fs7', 299)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs71', 300)" onmouseover="showTip(event, 'fs71', 300)" class="i">acc</span> <span class="o">+</span> <span class="n">1</span>) <span class="n">0</span> <span onmouseout="hideTip(event, 'fs81', 301)" onmouseover="showTip(event, 'fs81', 301)" class="i">xs</span>
+
+<span onmouseout="hideTip(event, 'fs80', 302)" onmouseover="showTip(event, 'fs80', 302)" class="f">length</span> [<span class="n">1..</span><span class="n">10</span>] <span class="c">// 10</span>
+
+<span class="c">// Filter</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs82', 303)" onmouseover="showTip(event, 'fs82', 303)" class="f">filter</span> <span onmouseout="hideTip(event, 'fs83', 304)" onmouseover="showTip(event, 'fs83', 304)" class="f">predicate</span> <span onmouseout="hideTip(event, 'fs81', 305)" onmouseover="showTip(event, 'fs81', 305)" class="i">xs</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs76', 306)" onmouseover="showTip(event, 'fs76', 306)" class="f">foldBack</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs7', 307)" onmouseover="showTip(event, 'fs7', 307)" class="i">x</span> <span onmouseout="hideTip(event, 'fs75', 308)" onmouseover="showTip(event, 'fs75', 308)" class="i">acc</span> <span class="k">-&gt;</span> <span class="k">if</span> <span onmouseout="hideTip(event, 'fs83', 309)" onmouseover="showTip(event, 'fs83', 309)" class="f">predicate</span> <span onmouseout="hideTip(event, 'fs7', 310)" onmouseover="showTip(event, 'fs7', 310)" class="i">x</span> <span class="k">then</span> <span onmouseout="hideTip(event, 'fs7', 311)" onmouseover="showTip(event, 'fs7', 311)" class="i">x</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs75', 312)" onmouseover="showTip(event, 'fs75', 312)" class="i">acc</span> <span class="k">else</span> <span onmouseout="hideTip(event, 'fs75', 313)" onmouseover="showTip(event, 'fs75', 313)" class="i">acc</span>) <span onmouseout="hideTip(event, 'fs81', 314)" onmouseover="showTip(event, 'fs81', 314)" class="i">xs</span> []
+
+<span onmouseout="hideTip(event, 'fs82', 315)" onmouseover="showTip(event, 'fs82', 315)" class="f">filter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 316)" onmouseover="showTip(event, 'fs13', 316)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs13', 317)" onmouseover="showTip(event, 'fs13', 317)" class="i">x</span> <span class="o">%</span> <span class="n">2</span> <span class="o">=</span> <span class="n">0</span>) [<span class="n">1..</span><span class="n">10</span>] <span class="c">// [2;4;6;8;10]</span>
+
+<span class="c">// Iter</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs84', 318)" onmouseover="showTip(event, 'fs84', 318)" class="f">iter</span> <span onmouseout="hideTip(event, 'fs85', 319)" onmouseover="showTip(event, 'fs85', 319)" class="f">f</span> <span onmouseout="hideTip(event, 'fs81', 320)" onmouseover="showTip(event, 'fs81', 320)" class="i">xs</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs63', 321)" onmouseover="showTip(event, 'fs63', 321)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs86', 322)" onmouseover="showTip(event, 'fs86', 322)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs7', 323)" onmouseover="showTip(event, 'fs7', 323)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs85', 324)" onmouseover="showTip(event, 'fs85', 324)" class="f">f</span> <span onmouseout="hideTip(event, 'fs7', 325)" onmouseover="showTip(event, 'fs7', 325)" class="i">x</span>) () <span onmouseout="hideTip(event, 'fs81', 326)" onmouseover="showTip(event, 'fs81', 326)" class="i">xs</span>
+
+<span onmouseout="hideTip(event, 'fs84', 327)" onmouseover="showTip(event, 'fs84', 327)" class="f">iter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 328)" onmouseover="showTip(event, 'fs13', 328)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs18', 329)" onmouseover="showTip(event, 'fs18', 329)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs13', 330)" onmouseover="showTip(event, 'fs13', 330)" class="i">x</span>) [<span class="n">1..</span><span class="n">5</span>] <span class="c">// Prints numbers 1 to 5 on a line</span>
+
+<span class="c">// Append</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs87', 331)" onmouseover="showTip(event, 'fs87', 331)" class="f">append</span> <span onmouseout="hideTip(event, 'fs81', 332)" onmouseover="showTip(event, 'fs81', 332)" class="i">xs</span> <span onmouseout="hideTip(event, 'fs88', 333)" onmouseover="showTip(event, 'fs88', 333)" class="i">ys</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs76', 334)" onmouseover="showTip(event, 'fs76', 334)" class="f">foldBack</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs7', 335)" onmouseover="showTip(event, 'fs7', 335)" class="i">x</span> <span onmouseout="hideTip(event, 'fs75', 336)" onmouseover="showTip(event, 'fs75', 336)" class="i">acc</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs7', 337)" onmouseover="showTip(event, 'fs7', 337)" class="i">x</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs75', 338)" onmouseover="showTip(event, 'fs75', 338)" class="i">acc</span>) <span onmouseout="hideTip(event, 'fs81', 339)" onmouseover="showTip(event, 'fs81', 339)" class="i">xs</span> <span onmouseout="hideTip(event, 'fs88', 340)" onmouseover="showTip(event, 'fs88', 340)" class="i">ys</span>
+
+<span onmouseout="hideTip(event, 'fs87', 341)" onmouseover="showTip(event, 'fs87', 341)" class="f">append</span> [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>] [<span class="n">4</span>;<span class="n">5</span>;<span class="n">6</span>] <span class="c">// [1;2;3;4;5;6]</span>
+
+<span class="c">// concat</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs89', 342)" onmouseover="showTip(event, 'fs89', 342)" class="f">concat</span> <span onmouseout="hideTip(event, 'fs90', 343)" onmouseover="showTip(event, 'fs90', 343)" class="i">lol</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs63', 344)" onmouseover="showTip(event, 'fs63', 344)" class="f">fold</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs75', 345)" onmouseover="showTip(event, 'fs75', 345)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs91', 346)" onmouseover="showTip(event, 'fs91', 346)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs87', 347)" onmouseover="showTip(event, 'fs87', 347)" class="f">append</span> <span onmouseout="hideTip(event, 'fs75', 348)" onmouseover="showTip(event, 'fs75', 348)" class="i">acc</span> <span onmouseout="hideTip(event, 'fs91', 349)" onmouseover="showTip(event, 'fs91', 349)" class="i">x</span>) [] <span onmouseout="hideTip(event, 'fs90', 350)" onmouseover="showTip(event, 'fs90', 350)" class="i">lol</span>
+
+<span onmouseout="hideTip(event, 'fs89', 351)" onmouseover="showTip(event, 'fs89', 351)" class="f">concat</span> [[<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>]; [<span class="n">4</span>;<span class="n">5</span>;<span class="n">6</span>]; [<span class="n">7</span>;<span class="n">8</span>;<span class="n">9</span>]] <span class="c">// [1;2;3;4;5;6;7;8;9]</span>
+
+<span class="c">// collect</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs92', 352)" onmouseover="showTip(event, 'fs92', 352)" class="f">collect</span> <span onmouseout="hideTip(event, 'fs93', 353)" onmouseover="showTip(event, 'fs93', 353)" class="f">f</span> <span onmouseout="hideTip(event, 'fs81', 354)" onmouseover="showTip(event, 'fs81', 354)" class="i">xs</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs72', 355)" onmouseover="showTip(event, 'fs72', 355)" class="f">map</span> <span onmouseout="hideTip(event, 'fs93', 356)" onmouseover="showTip(event, 'fs93', 356)" class="f">f</span> <span onmouseout="hideTip(event, 'fs81', 357)" onmouseover="showTip(event, 'fs81', 357)" class="i">xs</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs89', 358)" onmouseover="showTip(event, 'fs89', 358)" class="f">concat</span>
+
+<span onmouseout="hideTip(event, 'fs92', 359)" onmouseover="showTip(event, 'fs92', 359)" class="f">collect</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs13', 360)" onmouseover="showTip(event, 'fs13', 360)" class="i">x</span> <span class="k">-&gt;</span> [<span onmouseout="hideTip(event, 'fs13', 361)" onmouseover="showTip(event, 'fs13', 361)" class="i">x</span>;<span onmouseout="hideTip(event, 'fs13', 362)" onmouseover="showTip(event, 'fs13', 362)" class="i">x</span>;<span onmouseout="hideTip(event, 'fs13', 363)" onmouseover="showTip(event, 'fs13', 363)" class="i">x</span>]) [<span class="n">1</span>;<span class="n">2</span>;<span class="n">3</span>] <span class="c">// [1;1;1;2;2;2;3;3;3]</span>
+</code></pre></td>
+</tr>
+</table>
+<p>From the implementation i think only <code>append</code>, <code>concat</code> and <code>collect</code> are interesting.</p>
+<p>In <code>append</code> you see that you don't have to start from an empty list. Appending two list basically
+means you prepend the first list to the second list by going backwards through the first list. So
+the second list is your starting <em>accumulator</em>.</p>
+<p>With <code>append</code> in place, <code>concat</code> becomes easy. As you just repeatedly append two lists to a single
+one.</p>
+<p>And once you have <code>concat</code>, it is also pretty easy to implement <code>collect</code> through <code>map</code> and <code>concat</code>.</p>
+<h2>Summary</h2>
+<p>We first started with some loops that modifies <em>mutable variables</em>. In order to get rid of <em>mutable</em>
+variables or to work with <em>immutable data-structures</em> we need recursion. Without <em>recursion</em>
+it is basically impossible to effectively work with <em>immutable data-structures</em>. But this doesn't mean
+we always have to write recursive functions.</p>
+<p>We start by implementing a <code>fold</code> function that does the same thing as a <code>foreach</code> loop just in
+an <em>immutable</em> way. With <code>fold</code> we abstracted the <em>recursive looping</em> in it's own function.
+New functions can now be implemented on top of <code>fold</code> or the function we created with <code>fold</code>.</p>
+<p>While <em>recursion</em> is indeed an important aspect of functional programming, as we just need it to
+work with <em>immutable data</em>. It doesn't mean we should use <em>recursion</em> all over the place. The use
+of <em>recursion</em> is often a sign that we lack abstraction.</p>
+
+
+<div class="tip" id="fs1">module Main</div>
+<div class="tip" id="fs2">type ResizeArray&lt;&#39;T&gt; = System.Collections.Generic.List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.ResizeArray&lt;_&gt;</div>
+<div class="tip" id="fs3">val map : f:(&#39;a -&gt; &#39;b) -&gt; oldArray:seq&lt;&#39;a&gt; -&gt; System.Collections.Generic.List&lt;&#39;b&gt;<br /><br />Full name: Main.ResizeArray.map</div>
+<div class="tip" id="fs4">val f : (&#39;a -&gt; &#39;b)</div>
+<div class="tip" id="fs5">val oldArray : seq&lt;&#39;a&gt;</div>
+<div class="tip" id="fs6">val newArray : System.Collections.Generic.List&lt;&#39;b&gt;</div>
+<div class="tip" id="fs7">val x : &#39;a</div>
+<div class="tip" id="fs8">System.Collections.Generic.List.Add(item: &#39;b) : unit</div>
+<div class="tip" id="fs9">val numbers : System.Collections.Generic.List&lt;int&gt;<br /><br />Full name: Main.numbers</div>
+<div class="tip" id="fs10">Multiple items<br />module ResizeArray<br /><br />from Main<br /><br />--------------------<br />type ResizeArray&lt;&#39;T&gt; = System.Collections.Generic.List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.ResizeArray&lt;_&gt;</div>
+<div class="tip" id="fs11">System.Collections.Generic.List.Add(item: int) : unit</div>
+<div class="tip" id="fs12">val squaredNumbers : System.Collections.Generic.List&lt;int&gt;<br /><br />Full name: Main.squaredNumbers</div>
+<div class="tip" id="fs13">val x : int</div>
+<div class="tip" id="fs14">val mapWithImmutableList : f:(&#39;a -&gt; &#39;b) -&gt; list:&#39;a list -&gt; &#39;b list<br /><br />Full name: Main.mapWithImmutableList</div>
+<div class="tip" id="fs15">Multiple items<br />val list : &#39;a list<br /><br />--------------------<br />type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs16">val mutable acc : &#39;b list</div>
+<div class="tip" id="fs17">val i : int<br /><br />Full name: Main.i</div>
+<div class="tip" id="fs18">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs19">val i1 : int<br /><br />Full name: Main.i1</div>
+<div class="tip" id="fs20">val i2 : int<br /><br />Full name: Main.i2</div>
+<div class="tip" id="fs21">val i3 : int<br /><br />Full name: Main.i3</div>
+<div class="tip" id="fs22">val calc : int<br /><br />Full name: mutableloopstoimmutability.calc</div>
+<div class="tip" id="fs23">val loop : i:int -&gt; &#39;a<br /><br />Full name: Main.loop</div>
+<div class="tip" id="fs24">val i : int</div>
+<div class="tip" id="fs25">val loop : i:int -&gt; unit<br /><br />Full name: Main.loop</div>
+<div class="tip" id="fs26">val forLoop : i:int -&gt; stop:int -&gt; f:(int -&gt; unit) -&gt; unit<br /><br />Full name: Main.forLoop</div>
+<div class="tip" id="fs27">val stop : int</div>
+<div class="tip" id="fs28">val f : (int -&gt; unit)</div>
+<div class="tip" id="fs29">val forLoop : start:int -&gt; stop:int -&gt; f:(int -&gt; unit) -&gt; unit<br /><br />Full name: Main.forLoop</div>
+<div class="tip" id="fs30">val start : int</div>
+<div class="tip" id="fs31">val loop : (int -&gt; unit)</div>
+<div class="tip" id="fs32">val forLoop : start:int -&gt; stop:int -&gt; f:(int -&gt; int -&gt; int) -&gt; int<br /><br />Full name: Main.forLoop</div>
+<div class="tip" id="fs33">val f : (int -&gt; int -&gt; int)</div>
+<div class="tip" id="fs34">val loop : (int -&gt; int -&gt; int)</div>
+<div class="tip" id="fs35">val sum : int</div>
+<div class="tip" id="fs36">val nextSum : int</div>
+<div class="tip" id="fs37">val sum : int<br /><br />Full name: Main.sum</div>
+<div class="tip" id="fs38">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs39">val forLoop : start:int -&gt; stop:int -&gt; init:&#39;a -&gt; f:(int -&gt; &#39;a -&gt; &#39;a) -&gt; &#39;a<br /><br />Full name: Main.forLoop</div>
+<div class="tip" id="fs40">val init : &#39;a</div>
+<div class="tip" id="fs41">val f : (int -&gt; &#39;a -&gt; &#39;a)</div>
+<div class="tip" id="fs42">val loop : (int -&gt; &#39;a -&gt; &#39;a)</div>
+<div class="tip" id="fs43">val acc : &#39;a</div>
+<div class="tip" id="fs44">val nextAcc : &#39;a</div>
+<div class="tip" id="fs45">val listOfNumbers : int list<br /><br />Full name: Main.listOfNumbers</div>
+<div class="tip" id="fs46">Multiple items<br />val list : int list<br /><br />--------------------<br />type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs47">val stringofNumbers : string<br /><br />Full name: Main.stringofNumbers</div>
+<div class="tip" id="fs48">val str : string</div>
+<div class="tip" id="fs49">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs50">val x : float<br /><br />Full name: Main.x</div>
+<div class="tip" id="fs51">val y : float<br /><br />Full name: Main.y</div>
+<div class="tip" id="fs52">val x : float</div>
+<div class="tip" id="fs53">val numbers1 : int list<br /><br />Full name: Main.numbers1</div>
+<div class="tip" id="fs54">val numbers2 : int list<br /><br />Full name: Main.numbers2</div>
+<div class="tip" id="fs55">val head : int<br /><br />Full name: Main.head</div>
+<div class="tip" id="fs56">val tail : int list<br /><br />Full name: Main.tail</div>
+<div class="tip" id="fs57">val head1 : int<br /><br />Full name: Main.head1</div>
+<div class="tip" id="fs58">val tail1 : int list<br /><br />Full name: Main.tail1</div>
+<div class="tip" id="fs59">val head2 : int<br /><br />Full name: Main.head2</div>
+<div class="tip" id="fs60">val tail2 : int list<br /><br />Full name: Main.tail2</div>
+<div class="tip" id="fs61">val head3 : int<br /><br />Full name: Main.head3</div>
+<div class="tip" id="fs62">val tail3 : int list<br /><br />Full name: Main.tail3</div>
+<div class="tip" id="fs63">val fold : f:(&#39;State -&gt; &#39;a -&gt; &#39;State) -&gt; acc:&#39;State -&gt; list:&#39;a list -&gt; &#39;State<br /><br />Full name: Main.fold</div>
+<div class="tip" id="fs64">val f : (&#39;State -&gt; &#39;a -&gt; &#39;State)</div>
+<div class="tip" id="fs65">val acc : &#39;State</div>
+<div class="tip" id="fs66">val loop : (&#39;a list -&gt; &#39;State -&gt; &#39;State)</div>
+<div class="tip" id="fs67">val remainingList : &#39;a list</div>
+<div class="tip" id="fs68">val head : &#39;a</div>
+<div class="tip" id="fs69">val tail : &#39;a list</div>
+<div class="tip" id="fs70">val nextAcc : &#39;State</div>
+<div class="tip" id="fs71">val acc : int</div>
+<div class="tip" id="fs72">val map : f:(&#39;a -&gt; &#39;b) -&gt; list:&#39;a list -&gt; &#39;b list<br /><br />Full name: Main.map</div>
+<div class="tip" id="fs73">val acc : &#39;b list</div>
+<div class="tip" id="fs74">val rev : list:&#39;a list -&gt; &#39;a list<br /><br />Full name: Main.rev</div>
+<div class="tip" id="fs75">val acc : &#39;a list</div>
+<div class="tip" id="fs76">val foldBack : f:(&#39;a -&gt; &#39;State -&gt; &#39;State) -&gt; list:&#39;a list -&gt; acc:&#39;State -&gt; &#39;State<br /><br />Full name: Main.foldBack</div>
+<div class="tip" id="fs77">val f : (&#39;a -&gt; &#39;State -&gt; &#39;State)</div>
+<div class="tip" id="fs78">val numbers : int list<br /><br />Full name: Main.numbers</div>
+<div class="tip" id="fs79">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs80">val length : xs:&#39;a list -&gt; int<br /><br />Full name: Main.length</div>
+<div class="tip" id="fs81">val xs : &#39;a list</div>
+<div class="tip" id="fs82">val filter : predicate:(&#39;a -&gt; bool) -&gt; xs:&#39;a list -&gt; &#39;a list<br /><br />Full name: Main.filter</div>
+<div class="tip" id="fs83">val predicate : (&#39;a -&gt; bool)</div>
+<div class="tip" id="fs84">val iter : f:(&#39;a -&gt; unit) -&gt; xs:&#39;a list -&gt; unit<br /><br />Full name: Main.iter</div>
+<div class="tip" id="fs85">val f : (&#39;a -&gt; unit)</div>
+<div class="tip" id="fs86">val acc : unit</div>
+<div class="tip" id="fs87">val append : xs:&#39;a list -&gt; ys:&#39;a list -&gt; &#39;a list<br /><br />Full name: Main.append</div>
+<div class="tip" id="fs88">val ys : &#39;a list</div>
+<div class="tip" id="fs89">val concat : lol:&#39;a list list -&gt; &#39;a list<br /><br />Full name: Main.concat</div>
+<div class="tip" id="fs90">val lol : &#39;a list list</div>
+<div class="tip" id="fs91">val x : &#39;a list</div>
+<div class="tip" id="fs92">val collect : f:(&#39;a -&gt; &#39;b list) -&gt; xs:&#39;a list -&gt; &#39;b list<br /><br />Full name: Main.collect</div>
+<div class="tip" id="fs93">val f : (&#39;a -&gt; &#39;b list)</div>

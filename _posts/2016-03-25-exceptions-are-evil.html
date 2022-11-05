@@ -1,0 +1,103 @@
+---
+layout: post
+title: "Exceptions are Evil"
+---
+
+<p>Most people today agree that <code>null</code> is evil, and they try to get rid of them. One technique that
+most people prefer is to throw an exception in the case of an error, or if we cannot return a valid
+value from a function. The problem is, exceptions are not any kind better than <code>null</code>, and
+they don't solve any problem that <code>null</code> introduced.</p>
+<p>In my previous post <a href="{% post_url 2016-03-20-null-is-evil %}">null is Evil</a> i mentioned seven
+problems that <code>null</code> introduced. So let's look if <em>exceptions</em> solve one of those problems.</p>
+<h2>1. You cannot see if a function throws an exception</h2>
+<p>When you look at the type signature of any function, you just see something like</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">PersonId</span> <span class="k">-&gt;</span> <span class="i">Person</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The same way that you cannot see that <code>null</code> could be returned. The same way you don't know
+if an exception could be thrown or not.</p>
+<h2>2. We are not forced to try/catch</h2>
+<p>You are not forced to add any kind of <code>try/catch</code>, the same way you are not forced to add
+a <code>null</code> check. If you forgot to add your <code>null</code> checks, you end up getting <code>NullReferenceException</code>.
+If you forgot to adding <code>try/catch</code> you end up with <code>XYZException</code>. Replacing a <code>NullReferenceException</code>
+just with another kind of <code>Exception</code> isn't anyway better.</p>
+<h2>3. Every function could throw an Exception</h2>
+<p>The big problem of 1. and 2. combined is that you defensively start to check all return values
+from a function if it contains <code>null</code>. And you also have to check every argument if it contains
+<code>null</code>. This leads to numerous <code>null</code> checking throughout your code. But why do you add those
+checks in the first place? Because you want to prevent <code>NullReferenceException</code>. So how is a
+function that sometimes returns <code>null</code> that can lead to a <code>NullReferenceException</code> anyhow better
+as a function that sometimes throws <code>XYZException</code> directly?</p>
+<p>Not only does it not solve the problem at all. You still have to add your checkings. But instead of
+<code>null</code> checks throughout your code. You wrap your code in <code>try/catch</code> blocks. Why is checking for
+null bad</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="i">result</span> <span class="o">=</span> <span class="i">SomeFunction</span>()
+<span class="k">if</span> <span class="i">result</span> <span class="o">&lt;&gt;</span> <span class="k">null</span> <span class="k">then</span>
+    <span class="c">// Some code if everything was right</span>
+<span class="k">else</span>
+    <span class="c">// Error condition on null</span>
+</code></pre></td>
+</tr>
+</table>
+<p>and suddenly wrapping your code in a <code>try/catch</code> anyhow better?</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">try</span>
+    <span class="k">let</span> <span class="i">result</span> <span class="o">=</span> <span class="i">SomeFunction</span>()
+    <span class="c">// Some code if everything was right</span>
+<span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">exn</span> <span class="k">-&gt;</span> <span class="c">// Error condition on Exception</span>
+</code></pre></td>
+</tr>
+</table>
+<h2>4. We cannot skip the checking</h2>
+<p>Probably you would assume that exceptions solve it, but actually, they don't really provide an improvement.
+Sure, you don't have to wrap a try/catch block around your code. Exactly the same as you don't have
+to write an explicit <code>null</code> check. So what happens in both cases?</p>
+<p>In both cases an exception is thrown either a <code>NullReferenceException</code> or probably you throw some other kind of
+<code>Exception</code>. Yes, you can catch your <code>Exception</code> further up the stack. The same way as you can catch
+a <code>NullReferenceException</code> further up the stack. There is no difference at all here.</p>
+<p>But overall, this was not meant with <em>skipping</em>. The idea of <em>skipping</em> was that you can do the null check
+at some later point where it makes sense. That doesn't mean only "further up the stack". The idea is that you
+pass the whole error as a value around, as you can do with <code>Optional</code>, and additional you are forced
+to check the condition of your <code>Optional</code> at compile-time.</p>
+<h2>5. and 6. We can pass functions/objects that throws exception around</h2>
+<p>At default you don't pass <code>Exception</code> types as values around. You wrap your code in a <code>try/catch</code> and that's
+it. You also cannot implicitly pass an <code>Exception</code> as a valid value to a function that expects a <code>Person</code>. With
+<code>null</code> you can do that, that's why we have to also add <code>null</code> checks for function arguments.</p>
+<p>So it seems we are not affected if we throw exceptions. But that is wrong. An object itself contains <em>methods</em>.
+And every method on an object could throw an exception.</p>
+<p>With <code>null</code> you have to check every argument if it is <code>null</code>. With <em>exceptions</em> you have to additional add
+try/catch blocks if you call a method on an object. Because you pass objects around, and objects have <em>methods</em>
+that could throw exceptions when invoked. You end up with the same problem.</p>
+<h2>7. Happy Path Coding</h2>
+<p>It seems <em>Exceptions</em> solve the problem of Happy-Path coding. But it really does not. Yes, you are not forced to add
+a <code>try/catch</code> around every function directly. You just can use one <code>try/catch</code> around the whole code and catch
+<strong>any exception</strong>.</p>
+<p>Absolutely, and the thing is. <strong>Any exception</strong> also includes <code>NullReferenceException</code>. So if you like to have
+<em>exceptions</em>. No problem, just return <code>null</code> from your functions and don't add any <code>null</code> checks.</p>
+<h2>Summary</h2>
+<p>It seems many people forget about why <code>null</code> is bad. <code>null</code> is bad because <strong>they throw exceptions</strong> when
+you try to use them. So using <em>exceptions</em> instead of using <code>null</code> makes nothing better at all. The reason
+why we add all those <code>null</code> checks is to <strong>prevent exceptions</strong> to happen. So how can we get rid of that problem
+if we choose to directly throw exceptions?</p>
+<p>We can't. Throwing <em>exceptions</em> as a solution of getting rid of <em>null</em> is just a Pyrrhic victory. Not only that.
+Exceptions in general share the same problems as <code>null</code>.</p>
+<p>So what is the alternative? My Post about <a href="{% post_url 2016-03-20-null-is-evil %}">null is Evil</a> contains solution
+of getting rid of <code>null</code>. The thing is, the same solutions also works for <em>Exceptions</em>!</p>
+
+
+<div class="tip" id="fs1">type exn = System.Exception<br /><br />Full name: Microsoft.FSharp.Core.exn</div>
